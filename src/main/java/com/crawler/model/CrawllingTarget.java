@@ -1,4 +1,4 @@
-package com.crawler.config;
+package com.crawler.model;
 
 public class CrawllingTarget {
 	//shop info	
@@ -59,6 +59,19 @@ public class CrawllingTarget {
 
 	public int getScroll_type() {
 		return scroll_type;
+	}
+	
+	public CrawllingTarget(String shop_url, String shop_name, String shop_description, String product_name, String product_price, String product_image,
+			String product_url, String page_selector, int scroll_type) {
+		this.shop_url = shop_url;
+		this.shop_name = shop_name;
+		this.shop_description=shop_description;
+		this.product_name = product_name;
+		this.product_price = product_price;
+		this.product_image = product_image;
+		this.product_url = product_url;
+		this.page_selector = page_selector;
+		this.scroll_type = scroll_type;
 	}
 
 	public CrawllingTarget(int seq, String shop_url, String shop_name, String shop_description, String product_name, String product_price, String product_image,

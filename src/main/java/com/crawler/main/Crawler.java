@@ -1,9 +1,7 @@
 package com.crawler.main;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,20 +12,26 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.crawler.config.Config;
-import com.crawler.config.CrawllingTarget;
 import com.crawler.db.Connector;
+import com.crawler.model.CrawllingTarget;
 import com.crawler.model.Product;
 
 public class Crawler extends Thread{
 	private static final Logger log = LogManager.getLogger(Crawler.class);
 	
-	@SuppressWarnings("unused")
 	private WebDriverWait wait;
 	private ChromeDriver webDriver;
 	private ChromeOptions options;
-	
+	private static Connector targetConn;
+	private static Connector serviceConn;
+	public boolean threadEnd = false;
+	private int listCnt = 0;
+	public String tName;
+
 	public Crawler() {
 		System.setProperty("webdriver.chrome.driver", Config.ROOTPATH+Config.BROWSERDRVIER);
+		targetConn = new Connector("target");
+		serviceConn = new Connector("service");
 		
 		options = new ChromeOptions();
 		options.addArguments("headless");
@@ -39,7 +43,14 @@ public class Crawler extends Thread{
 	
 	public Crawler(int i) {
 		this();
-		
+		if(round==0) {
+			try {
+				serviceConn.createTmpTable();
+			}catch(Exception e) {
+				log.info(e.getMessage());
+				serviceConn.deleteTmpTable();
+			}
+		}
 	}
 	
 	//크롤링
@@ -49,8 +60,8 @@ public class Crawler extends Thread{
 		
 		int round = 0;
 		
-		//scroll_type==1 / 무한스크롤
-		//scroll_type> 1 / 페이지 방식
+		//scroll_type == 1 / 무한스크롤
+		//scroll_type > 1 / 페이지 방식
 		
 		if(ct.getScroll_type()==1) {
 			round=1;
@@ -63,24 +74,24 @@ public class Crawler extends Thread{
 			//임시로 넣은 값임
 			round=2;
 		}
+		log.info(String.format("\t%s : start crawlling \n\t\t\t\t\t\t%s : total page - %d", Thread.currentThread().getName(),Thread.currentThread().getName(),round));
 		
-		log.info("start crawlling");
-		log.info("total page : "+round);
-		
-		for(int i = 0; i<round;i++) {
+		for(int i = 1; i<=round;i++) {
 			webDriver.get(ct.getShop_url()+ct.getPage_selector()+i);
-			
 			long height = 0;
-			while(true) {
+			
+			for(int j=1;true;j++) {
+				
+				height = (Long)webDriver.executeScript("return window.scrollY");
+						
 				wait = new WebDriverWait(webDriver,10);
-				webDriver.executeScript("window.scrollTo(0,"+(i+500)+");");
+				webDriver.executeScript("window.scrollTo(0,"+(j*500)+");");
 				wait = new WebDriverWait(webDriver,10);
 				
 				long tmpheight = (Long)webDriver.executeScript("return window.scrollY");
-				if(tmpheight!=0 && height==tmpheight) {
+				if(height==tmpheight) {
 					break;
 				}
-				height=tmpheight;
 			}
 			//제품이름
      		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct_name()));
@@ -92,69 +103,92 @@ public class Crawler extends Thread{
      		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
      		
      		if(list.size()!=imgList.size() 
-     				|| imgList.size() != priceList.size()
-     				|| priceList.size() != detailLink.size()) {
+ 				|| imgList.size() != priceList.size()
+ 				|| priceList.size() != detailLink.size()){
      			log.info(String.format("Crawlling result miss match \n list size : %d \n img list size : %d \n price list size : %d \n detail urllink size : %d",list.size(),imgList.size(),priceList.size(),detailLink.size()));
      			return null;
      		}
+     		
      		for(int j =0;j<list.size();j++) {
-     			pArr.add(new Product(ct.getShop_name(),
-     								 list.get(j).getText(),
-     								 Integer.parseInt(priceList.get(j).getText().replaceAll("[^0-9]","")),
-     								 0,
-     								 detailLink.get(j).getAttribute("href"),
-     								 imgList.get(j).getAttribute("src")
- 								 ));
+     			Product p = new Product(ct.getShop_name(),
+										list.get(j).getText(),
+										Integer.parseInt(priceList.get(j).getText().replaceAll("[^0-9]","")),
+										0,
+										detailLink.get(j).getAttribute("href"),
+										imgList.get(j).getAttribute("src"));
+     			pArr.add(p);
      		}
 		}
+		webDriver.quit();
+		
+		log.debug("getProductList() end");
+		
 		return pArr;
 	}
 	
-	
-	public int round = 0;
+	public static int round = 0;
 	
 	//Thread
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
-		Map<Integer,List<CrawllingTarget>> result = new HashMap<Integer,List<CrawllingTarget>>();
-		Connector targetConn = new Connector("target");
-		Connector serviceConn = new Connector("service");
+		tName=Thread.currentThread().getName();
+		List<CrawllingTarget> list = targetConn.getTargetList(round);
 		try {
-			List<CrawllingTarget> list = targetConn.getTargetList(round);
-			
-			if(list==null || list.size()==0) {
+			if(list.size()==0) {
+				threadEnd=true;
 				throw new Exception("CrawllingTarget List is empty");
-			}else if(list.size()>0) {
-				result.put(round,list);
 			}
 			
-			Thread.currentThread().setName(round+"_"+result.get(0).get(0).getShop_name());
-			
+			listCnt = list.size();
 			log.info(String.format("===================  %s get TargetList OK  ====================",Thread.currentThread().getName()));
-			
-			for(int j = 0;j<result.size();j++) {
-				for(CrawllingTarget ct : result.get(j)) {
-					log.info(String.format("Crawlling start - %s", ct.getShop_name()));
-					
-//					List<?> pList = getProductList(ct);	//리플렉션으로 어떤 객체도 올수있게
-					
-					List<Product> pList = getProductList(ct);
-					serviceConn.insertCrawllingResult(pList);
+			if(list==null || list.size()==0) {
+				//타켓 정보 수정 요청테이블에 정보 입력
+				throw new Exception("CrawllingTarget List is empty");
+			}
+			boolean[] tmp = new boolean[list.size()];
+			for(int i = 0;i<list.size();i++) {
+				log.info(String.format("%s - Crawlling start - %s",Thread.currentThread().getName() , list.get(i).getShop_name()));
+				
+//				List<?> pList = getProductList(ct);	//리플렉션으로 어떤 객체도 올수있게
+				
+				log.info(String.format("Crawlling Target : %s / Crawl Description : %s", list.get(i).getShop_name(),list.get(i).getShop_description()));
+				
+				List<Product> pList = getProductList(list.get(i));
+				tmp[i]=serviceConn.insertCrawllingResult(pList);
+			}
+			while(!threadEnd) {
+				for(int i = 0; i< tmp.length;i++) {
+					if(!tmp[i]) {
+						continue;
+					}
+					threadEnd=true;
 				}
 			}
 			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			log.error(String.format(e.getMessage()));
-			e.printStackTrace();
-			return;
 		} catch(Exception e){
-			log.error(String.format(e.getMessage()));
-			return;
-		} finally {
-			targetConn.connClose();
+			log.info(e.getMessage());
 		}
+		
+		log.debug(String.format("%s : Crawler running",Thread.currentThread().getName()));
+		if(threadEnd) {
+			log.debug(Thread.currentThread().getName()+" Thread end ");
+			
+		}
+	}
+	
+	public void close() {
+		
+		try {
+			targetConn.connClose();
+		}catch(Exception e) {
+			log.error(e.getMessage());
+		}
+		try {
+			serviceConn.connClose();
+		}catch(Exception e) {
+			log.error(e.getMessage());
+		}
+		
 	}
 }

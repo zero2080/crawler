@@ -35,33 +35,27 @@ public class Config {
 	public	static			String	SERVICEID		= null;
 	public	static			String	SERVICEPW		= null;
 	public	static			String	SERVICEVERIFYQUERY= null;
+	public	static			String	SERVICETABLE	= null;
 	
 	public	static			int		THREADCNT		= 0;
 	public	static			int		THREADUNIT		= 0;
 	
-	
+	public 	static			int		TARGETCOUNT		= 0;
+	public 	static			int		THREADROUND	= 0;
 	private static Config instance;
 	
 	public static Config getInstance() {
-		if(instance == null) {
-			System.out.println("config class not create");
-			help();
-			System.exit(0);
-			return null;
-		}
 		return instance;
-	};
-	
-	public static Config getInstance(String config) {
+	}
+	public static void setConfig(String config) {
 		if(instance == null) {
-			return new Config(config);
+			instance =  new Config(config);
 		}
-		return instance;
 	}
 	
 	private Config(String config) {
 		File file = new File(config);
-		System.out.println(file.exists());
+
 		try {
 			Properties prop = new Properties();
 			prop.load(new FileInputStream(config));
@@ -82,6 +76,11 @@ public class Config {
 			Config.SERVICEID		= prop.getProperty(SERVICE+ID);
 			Config.SERVICEPW		= prop.getProperty(SERVICE+PW);
 			Config.SERVICEVERIFYQUERY= prop.getProperty(SERVICE+VERIFYQUERY);
+			Config.SERVICETABLE		= prop.getProperty(SERVICE+".table");
+			
+			com.crawler.db.Connector conn = new com.crawler.db.Connector(TARGET);
+			Config.TARGETCOUNT		= conn.getTargetCnt();
+//			conn.connClose();
 			
 			log.info(String.format("==============Config setting Ok==============="));
 		}catch(Exception e) {
@@ -93,4 +92,5 @@ public class Config {
 	public static void help() {
 		System.out.println("java -cp [jar filePath] -Dlog4j.configurationFile=./log4j2.xml -jar crawler-1.0-all.jar");
 	}
+	
 }
