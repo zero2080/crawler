@@ -25,7 +25,6 @@ public class Crawler extends Thread{
 	private static Connector targetConn;
 	private static Connector serviceConn;
 	public boolean threadEnd = false;
-	private int listCnt = 0;
 	public String tName;
 
 	public Crawler() {
@@ -54,7 +53,7 @@ public class Crawler extends Thread{
 	}
 	
 	//크롤링
-	public List<Product> getProductList(CrawllingTarget ct) throws Exception{
+	public List<Product> getProductList(CrawllingTarget ct) {
 		webDriver = new ChromeDriver(options);
 		List<Product> pArr = new ArrayList<Product>();
 		
@@ -140,7 +139,6 @@ public class Crawler extends Thread{
 				throw new Exception("CrawllingTarget List is empty");
 			}
 			
-			listCnt = list.size();
 			log.info(String.format("===================  %s get TargetList OK  ====================",Thread.currentThread().getName()));
 			if(list==null || list.size()==0) {
 				//타켓 정보 수정 요청테이블에 정보 입력

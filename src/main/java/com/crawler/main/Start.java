@@ -15,27 +15,30 @@ public class Start {
 		long start = System.currentTimeMillis();
 		
 		Config.setConfig(args[0]);
-		Crawler[] c = new Crawler[Config.TARGETCOUNT / Config.THREADCNT * Config.THREADUNIT];
+		int round = Config.TARGETCOUNT / Config.THREADUNIT;
+		Crawler[] c = new Crawler[round%Config.THREADUNIT>=0?Config.TARGETCOUNT:round];
 		int threadHolder = 0;
 		
 		while(true) {
 			if(Config.TARGETCOUNT==0) {
 				break;
-			}else if(threadHolder>Config.THREADCNT){
+			}else if(threadHolder>=Config.THREADCNT){
 				try {
 					for(int i=0;i<c.length;i++) {
-						if(c[i].threadEnd) {
+						if(c[i]==null || c[i].threadEnd) {
 							//쓰레드가 끝나면 while문을 다시 돌게 한다.
 							continue;
 						}else {
-							throw new Exception();
+							throw new CrawlerException();
 						}
 					}
-				}catch(Exception e) {
+				}catch(CrawlerException e) {
 					continue;
 				}
 			}
-			
+			if(threadHolder==c.length) {
+				break;
+			}
 			c[threadHolder] = new Crawler(threadHolder);
 			Crawler.round=threadHolder;
 			c[threadHolder].start();
@@ -55,7 +58,7 @@ public class Start {
 				
 				StringBuffer logger;
 				
-				if(print%5000000==0) {
+				if(print%500000==0) {
 					logger = new StringBuffer();
 					for(int i=0;i<trigger.size();i++) {
 						logger.append(tNames.get(i) + " : " + (trigger.get(i)?"stop":"working..."));
@@ -63,7 +66,7 @@ public class Start {
 							logger.append(" / ");
 						}
 					}
-					log.debug(logger.toString());
+					log.info(logger.toString());
 					print=0;
 				}
 				
@@ -91,7 +94,5 @@ public class Start {
 		long end = System.currentTimeMillis()-start;
 		String crawlTime = (end/1000/60+":"+(end/1000)%60+":"+end%1000);
 		log.info(String.format("Crawl Time : %s",crawlTime));
-		
-		
 	}
 }

@@ -30,7 +30,6 @@ public class ShopInfo {
 	}
 	
 	/**
-	 * 
 	 * @param shop_url	shopping mall URL address / ex) http://cooingkids.com/product/list.html?cate_no=92
 	 * @param shop_name	shopping mall name / ex) 쿠잉키즈
 	 * @param shop_description	ex) 유럽감성 어쩌구저쩌구
