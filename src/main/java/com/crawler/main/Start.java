@@ -58,7 +58,7 @@ public class Start {
 				
 				StringBuffer logger;
 				
-				if(print%500000==0) {
+				if(print%1000000==0) {
 					logger = new StringBuffer();
 					for(int i=0;i<trigger.size();i++) {
 						logger.append(tNames.get(i) + " : " + (trigger.get(i)?"stop":"working..."));
@@ -89,6 +89,14 @@ public class Start {
 				e.printStackTrace();
 				System.exit(0);
 			}
+		}
+		
+		try {
+			//테이블 정리! Clean up!
+			Crawler.cleanup();
+		}catch(Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		
 		long end = System.currentTimeMillis()-start;

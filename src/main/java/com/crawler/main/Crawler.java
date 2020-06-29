@@ -19,6 +19,7 @@ import com.crawler.model.Product;
 public class Crawler extends Thread{
 	private static final Logger log = LogManager.getLogger(Crawler.class);
 	
+	@SuppressWarnings("unused")
 	private WebDriverWait wait;
 	private ChromeDriver webDriver;
 	private ChromeOptions options;
@@ -56,27 +57,17 @@ public class Crawler extends Thread{
 	public List<Product> getProductList(CrawllingTarget ct) {
 		webDriver = new ChromeDriver(options);
 		List<Product> pArr = new ArrayList<Product>();
+
+		log.info(String.format("%s : start crawlling ", Thread.currentThread().getName()));
 		
-		int round = 0;
-		
-		//scroll_type == 1 / 무한스크롤
-		//scroll_type > 1 / 페이지 방식
-		
-		if(ct.getScroll_type()==1) {
-			round=1;
-		}else {
-			/*
-			 * 전체 페이지 가져오는 로직 
-			 * CrawllingTarget객체에 다음페이지로 가는 공통 URL을 넣거나
-			 *  페이지를 순차로 넘기면서 없는 페이지가 올때까지 반복한다.
-			 */
-			//임시로 넣은 값임
-			round=2;
-		}
-		log.info(String.format("\t%s : start crawlling \n\t\t\t\t\t\t%s : total page - %d", Thread.currentThread().getName(),Thread.currentThread().getName(),round));
-		
-		for(int i = 1; i<=round;i++) {
-			webDriver.get(ct.getShop_url()+ct.getPage_selector()+i);
+		for(int i = 1; true;i++) {
+			String pageUrl = "";
+			if(ct.getPage_size()==0) {
+				pageUrl=ct.getShop_url()+ct.getPage_selector()+i;
+			}else {
+				pageUrl=ct.getShop_url()+ct.getPage_selector()+i+ct.getPage_size_selector()+ct.getPage_size();
+			}
+			webDriver.get(pageUrl);
 			long height = 0;
 			
 			for(int j=1;true;j++) {
@@ -101,6 +92,10 @@ public class Crawler extends Thread{
      		//제품 상세페이지 URL
      		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
      		
+     		if(list.size()==0) {
+     			break;
+     		}
+     		
      		if(list.size()!=imgList.size() 
  				|| imgList.size() != priceList.size()
  				|| priceList.size() != detailLink.size()){
@@ -124,6 +119,21 @@ public class Crawler extends Thread{
 		
 		return pArr;
 	}
+	
+//	private int getTotalPageCount(CrawllingTarget ct) {
+//		int total = 0;
+//		while(true) {
+//			webDriver.get(ct.getShop_url()+ct.getPage_selector()+total);
+//			List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct_name()));
+//			System.out.println(list.get(0).getText());
+//			if(list.size()==0) {
+//				break;
+//			}
+//			total++;
+//		}
+//		return total;
+//	}
+//	
 	
 	public static int round = 0;
 	
@@ -171,8 +181,11 @@ public class Crawler extends Thread{
 		log.debug(String.format("%s : Crawler running",Thread.currentThread().getName()));
 		if(threadEnd) {
 			log.debug(Thread.currentThread().getName()+" Thread end ");
-			
 		}
+	}
+	
+	public static void cleanup() throws Exception{
+		serviceConn.cleanUp();
 	}
 	
 	public void close() {

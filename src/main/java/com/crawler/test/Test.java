@@ -66,7 +66,7 @@ public class Test {
 	
 	public static void main(String[] args) {
 		Config.setConfig(args[0]);
-		System.out.println(new com.crawler.db.Connector("target").getTargetList(0).get(0).toString());
+		System.out.println(new com.crawler.db.Connector("service").cleanUp());
 	}
 }
 	

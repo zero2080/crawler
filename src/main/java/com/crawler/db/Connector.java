@@ -104,11 +104,15 @@ public class Connector {
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
+												rs.getInt(i++),
+												rs.getInt(i++),
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
+												rs.getString(i++),
+												rs.getInt(i++),
 												rs.getInt(i++)
 											);
 				targetList.add(target);
@@ -133,54 +137,6 @@ public class Connector {
 		}
 		
 		Runnable2 runnable = new Runnable2(list);
-		
-//		Runnable runnable = new Runnable() {
-//			
-//			boolean result = false;
-//			
-//			public boolean getResult() {
-//				return result;
-//			}
-//			
-//			@Override
-//			public void run() {
-//				// TODO Auto-generated method stub
-//				try {
-//					for(Product pro:list) {
-//						int i = 1;
-//						pstmt=conn.prepareStatement("INSERT INTO tmp_"+Config.SERVICETABLE + " (	category1,	" + 
-//																	"	category2,	" + 
-//																	"	item_price,	" + 
-//																	"	shop_name,	" + 
-//																	"	item_name,	" + 
-//																	"	thumbnail_img," + 
-//																	"	detail_url,	" + 
-//																	"	create_date )" +
-//															"VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-//						pstmt.setInt(i++,0);
-//						pstmt.setInt(i++,0);
-//						pstmt.setInt(i++,pro.getProduct_price());
-//						pstmt.setString(i++,pro.getCompany());
-//						pstmt.setString(i++,pro.getProduct_name());
-//						pstmt.setString(i++,pro.getProduct_img_url());
-//						pstmt.setString(i++,pro.getProduct_url());
-//						
-//						pstmt.executeUpdate();
-//						
-//					}
-//					log.info(String.format("insert company : %s / cnt : %d", list.get(0).getCompany(),list.size()));
-//					
-//					conn.commit();
-//					result = true;
-//				}catch(Exception e) {
-//					log.error(String.format("error MSG : %s - %s",Thread.currentThread().getName(), e.getMessage()));
-//					rollback();
-//					e.printStackTrace();
-//				}finally{
-//					close();
-//				}
-//			}
-//		};
 		
 		runnable.run();
 		
@@ -291,6 +247,58 @@ public class Connector {
 		}
 	}
 	
+	public int cleanUp() {
+		int result = 0;
+		
+		String sql1 = "SELECT EXISTS (" + 
+					  "  SELECT 1 FROM Information_schema.tables" + 
+					  "  WHERE table_schema = '" + Config.SERVICEID + 
+					  "'  AND table_name = '" + Config.SERVICETABLE + "_original'"+
+					  ") AS flag";
+		String sql2 = "DROP TABLE " + Config.SERVICETABLE + "_original";
+		String sql3 = "ALTER TABLE "+Config.SERVICETABLE+" RENAME TO "+Config.SERVICETABLE+"_original";
+		String sql4 = "ALTER TABLE tmp_"+Config.SERVICETABLE+" RENAME TO "+Config.SERVICETABLE;
+		try {
+			//1. original 테이블 존재여부 확인
+			pstmt = conn.prepareStatement(sql1);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				int tmp = rs.getInt(1);
+				if(tmp!=1) {
+					log.info(String.format("%s_original Table is not exists / %d", Config.SERVICETABLE,tmp));
+				}else {
+					log.info(String.format("%s_original table is exists, this table drop ", Config.SERVICETABLE));
+					pstmt = conn.prepareStatement(sql2);
+					tmp = pstmt.executeUpdate();
+					if(tmp!=0) {
+						throw new Exception(String.format("%s_original table drop fail", Config.SERVICETABLE));
+					}
+				}
+			}
+			conn.commit();
+						
+			pstmt = conn.prepareStatement(sql3);
+			pstmt.executeUpdate(); 
+			pstmt = conn.prepareStatement(sql4);
+			result = pstmt.executeUpdate();
+			
+			conn.commit();
+			close();
+			
+			log.info("table cleanup");
+		}catch(Exception e) {
+			log.info(String.format("System shutdown!! error catch : %s", e.getMessage()));
+			log.error(e.getMessage());
+			e.printStackTrace();
+			rollback();
+			close();
+			connClose();
+			System.exit(0);
+		}
+		
+		return result;
+	}
+	
 	public int getTargetCnt() {
 		int result = 0;
 		try {
@@ -346,6 +354,8 @@ public class Connector {
 			e.printStackTrace();
 		}
 	}
+	
+	
 	private class Runnable2 implements Runnable{
 		
 		private boolean result = false;
