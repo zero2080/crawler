@@ -1,7 +1,6 @@
 package com.crawler.test;
 
 import com.crawler.config.Config;
-import com.crawler.db.Connector;
 
 public class Test {
 	

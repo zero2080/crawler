@@ -1,6 +1,5 @@
 package com.crawler.config;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
@@ -42,6 +41,7 @@ public class Config {
 	
 	public 	static			int		TARGETCOUNT		= 0;
 	public 	static			int		THREADROUND	= 0;
+	
 	private static Config instance;
 	
 	public static Config getInstance() {
@@ -54,8 +54,6 @@ public class Config {
 	}
 	
 	private Config(String config) {
-		File file = new File(config);
-
 		try {
 			Properties prop = new Properties();
 			prop.load(new FileInputStream(config));
