@@ -2,7 +2,7 @@
 
 ## Crawler 구조
 
-![CrawllingProcess](.\img\CrawllingProcess.png)
+![CrawllingProcess](./img/CrawllingProcess.png)
 
 ## API CLASS ##
  ### 1. 객체 생성 ###
