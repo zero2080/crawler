@@ -1,4 +1,9 @@
 # API 사용 설명서 ##
+
+## Crawler 구조
+
+![CrawllingProcess](.\img\CrawllingProcess.png)
+
 ## API CLASS ##
  ### 1. 객체 생성 ###
  > ShopInfo shopinfo = new ShopInfo( [Driver], [URL], [ID], [PW] );<br>
