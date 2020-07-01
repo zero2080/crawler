@@ -13,6 +13,7 @@ public class ApiTest {
 		String result = si.insertShopInfo("http://cooingkids.com/product/list.html?cate_no=92", "cooingkids", "kids", 0, 0,
 				"#contents > div > div > ul > li > div > div > div > p > a",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
+				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > a > img",
 				"#contents > div > div > ul > li > div > div > a.link", "&page=",null,0, 0);
 
@@ -21,6 +22,7 @@ public class ApiTest {
 		// 객체로 넘겨도됨
 		CrawllingTarget ct = new CrawllingTarget("http://cooingkids.com/product/list.html?cate_no=92", "cooingkids",
 				"kids", 0, 0, "#contents > div > div > ul > li > div > div > div > p > a",
+				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > a > img",
 				"#contents > div > div > ul > li > div > div > a.link", "&page=",null,0, 0);

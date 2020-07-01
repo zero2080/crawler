@@ -100,7 +100,9 @@ public class Start {
 		}
 		
 		long end = System.currentTimeMillis()-start;
+		
 		String crawlTime = (end/1000/60+":"+(end/1000)%60+":"+end%1000);
+		
 		log.info(String.format("Crawl Time : %s",crawlTime));
 	}
 }

@@ -1,6 +1,5 @@
 package com.crawler.main;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +10,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.crawler.api.ProductList;
 import com.crawler.config.Config;
 import com.crawler.db.Connector;
 import com.crawler.model.CrawllingTarget;
@@ -34,11 +34,11 @@ public class Crawler extends Thread{
 		serviceConn = new Connector("service");
 		
 		options = new ChromeOptions();
-		options.addArguments("headless");
-		options.addArguments("start-maximized");
-		options.addArguments("disable-dev-shm-usage");
-		options.addArguments("no-sendbox");
-		options.addArguments("disable-gpu");
+//		options.addArguments("headless");
+//		options.addArguments("start-maximized");
+//		options.addArguments("disable-dev-shm-usage");
+//		options.addArguments("no-sendbox");
+//		options.addArguments("disable-gpu");
 	}
 	
 	public Crawler(int i) {
@@ -56,17 +56,22 @@ public class Crawler extends Thread{
 	//크롤링
 	public List<Product> getProductList(CrawllingTarget ct) {
 		webDriver = new ChromeDriver(options);
-		List<Product> pArr = new ArrayList<Product>();
-
+		List<Product> pArr = new ProductList<Product>();
+		List<Product> page = new ProductList<Product>();
+		
 		log.info(String.format("%s : start crawlling ", Thread.currentThread().getName()));
 		
 		for(int i = 1; true;i++) {
+			List<Product> tmp_page = new ProductList<Product>();
+			
 			String pageUrl = "";
+			
 			if(ct.getPage_size()==0) {
 				pageUrl=ct.getShop_url()+ct.getPage_selector()+i;
 			}else {
 				pageUrl=ct.getShop_url()+ct.getPage_selector()+i+ct.getPage_size_selector()+ct.getPage_size();
 			}
+			
 			webDriver.get(pageUrl);
 			long height = 0;
 			
@@ -79,23 +84,28 @@ public class Crawler extends Thread{
 				wait = new WebDriverWait(webDriver,10);
 				
 				long tmpheight = (Long)webDriver.executeScript("return window.scrollY");
+				
 				if(height==tmpheight) {
 					break;
 				}
 			}
+			
 			//제품이름
      		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct_name()));
      		//이미지 url
      		List<WebElement> imgList = webDriver.findElements(By.cssSelector(ct.getProduct_image()));
      		//기본가격
      		List<WebElement> priceList = webDriver.findElements(By.cssSelector(ct.getProduct_price()));
+     		//할인가격
+     		List<WebElement> discountpriceList = webDriver.findElements(By.cssSelector(ct.getProduct_discount_price()));
      		//제품 상세페이지 URL
      		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
      		
      		if(list.size()==0) {
+     			log.debug("list size : 0");
      			break;
      		}
-     		
+
      		if(list.size()!=imgList.size() 
  				|| imgList.size() != priceList.size()
  				|| priceList.size() != detailLink.size()){
@@ -103,13 +113,33 @@ public class Crawler extends Thread{
      			return null;
      		}
      		
+     		System.out.println(ct.toString());
+     		
      		for(int j =0;j<list.size();j++) {
-     			Product p = new Product(ct.getShop_name(),
+     			Product p = new Product(ct.getCategory1(),
+     									ct.getCategory2(),
+     									ct.getShop_name(),
 										list.get(j).getText(),
+										ct.getShop_description(),
 										Integer.parseInt(priceList.get(j).getText().replaceAll("[^0-9]","")),
-										0,
+										Integer.parseInt(discountpriceList.get(j).getText().replaceAll("[^0-9]","")),
 										detailLink.get(j).getAttribute("href"),
 										imgList.get(j).getAttribute("src"));
+     			tmp_page.add(p);
+     		}
+     		
+     		if(i>0) {
+     			if(!page.equals(tmp_page)) {
+     				page = tmp_page;
+     				
+     			}else {
+     				log.debug(String.format(" page : %s \n\r\t\t\t\t\t tmp_page : %s", page.toString(),tmp_page.toString()));
+     				log.debug("same_page");
+     				break;
+     			}
+     		}
+     		
+     		for(Product p:tmp_page) {
      			pArr.add(p);
      		}
 		}
@@ -176,6 +206,7 @@ public class Crawler extends Thread{
 			Thread.sleep(10);
 		} catch(Exception e){
 			log.info(e.getMessage());
+			e.printStackTrace();
 		}
 		
 		log.debug(String.format("%s : Crawler running",Thread.currentThread().getName()));

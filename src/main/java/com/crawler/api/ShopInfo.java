@@ -46,6 +46,7 @@ public class ShopInfo {
 	 * 						  만들기 체험(9) - 0.체험
 	 * @param product_name	css selector / ex) #container>div>div>ul>li>p
 	 * @param product_price	css selector / ex) #container>div>div>ul>li>span
+	 * @param product_discount_price	css selector / ex) #container>div>div>ul>li>span
 	 * @param product_image	css selector / ex) #container>div>div>ul>li>img
 	 * @param product_url	css selector / ex) #container>div>div>ul>li>a
 	 * @param page_selector	css selector / ex) &page=
@@ -55,8 +56,8 @@ public class ShopInfo {
 	 * @return
 	 */
 	
-	public String insertShopInfo(String shop_url,String shop_name, String shop_description, int category1, int category2, String product_name, String product_price, String product_image,String product_url, String page_selector,String page_size_selector,int page_size,int scroll_type) {
-		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, category1, category2, product_name, product_price, product_image, product_url, page_selector,page_size_selector,page_size, scroll_type);
+	public String insertShopInfo(String shop_url,String shop_name, String shop_description, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,String product_url, String page_selector,String page_size_selector,int page_size,int scroll_type) {
+		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, category1, category2, product_name, product_discount_price, product_price, product_image, product_url, page_selector,page_size_selector,page_size, scroll_type);
 		return insertShopInfo(ct);
 	}
 }
