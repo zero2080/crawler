@@ -179,6 +179,9 @@ public class Crawler extends Thread{
 			}
 			
 			log.info(String.format("===================  %s get TargetList OK  ====================",Thread.currentThread().getName()));
+			
+			log.debug(String.format("%s : Crawler running",tName));
+			
 			if(list==null || list.size()==0) {
 				//타켓 정보 수정 요청테이블에 정보 입력
 				throw new Exception("CrawllingTarget List is empty");
@@ -200,17 +203,13 @@ public class Crawler extends Thread{
 						continue;
 					}
 					threadEnd=true;
+					log.debug(tName+" : end ");
 				}
 			}
 			Thread.sleep(10);
 		} catch(Exception e){
 			log.info(e.getMessage());
-			e.printStackTrace();
-		}
-		
-		log.debug(String.format("%s : Crawler running",Thread.currentThread().getName()));
-		if(threadEnd) {
-			log.debug(Thread.currentThread().getName()+" Thread end ");
+			//e.printStackTrace();
 		}
 	}
 	

@@ -40,12 +40,12 @@ dependencies {
     
     compile group : 'org.apache.logging.log4j', name: 'log4j-core', version:'2.13.1'
 
-    compile files('./lib/byte-buddy-1.8.15.jar')
-    compile files('./lib/client-combined-3.141.59.jar')
-    compile files('./lib/commons-exec-1.3.jar')
-    compile files('./lib/guava-25.0-jre.jar')
-    compile files('./lib/okhttp-3.11.0.jar')
-    compile files('./lib/okio-1.14.0.jar')
-    compile files('./lib/mariadb-java-client-2.6.0.jar')
+    compile files('../lib/byte-buddy-1.8.15.jar')
+    compile files('../lib/client-combined-3.141.59.jar')
+    compile files('../lib/commons-exec-1.3.jar')
+    compile files('../lib/guava-25.0-jre.jar')
+    compile files('../lib/okhttp-3.11.0.jar')
+    compile files('../lib/okio-1.14.0.jar')
+    compile files('../lib/mariadb-java-client-2.6.0.jar')
     
 }
