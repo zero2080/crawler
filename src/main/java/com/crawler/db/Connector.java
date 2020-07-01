@@ -102,6 +102,7 @@ public class Connector {
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
+												rs.getString(i++),
 												rs.getInt(i++),
 												rs.getInt(i++),
 												rs.getString(i++),
@@ -156,27 +157,31 @@ public class Connector {
 		String sql = "INSERT INTO target_info (shop_url," + 
 											  "shop_name," +
 											  "shop_description," +
+											  "target," +
 											  "category1," +
 											  "category2," + 
 											  "product_name, " + 
-											  "product_price, " + 
+											  "product_price, " +
+											  "product_discount_price, " +
 											  "product_image, " + 
 											  "product_url, " + 
 											  "page_selector, " +
 											  "page_size_selector, " +
 											  "page_size, " +
 											  "scroll_type)" + 
-								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			int i = 1;
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(i++, ct.getShop_url()); 
 			pstmt.setString(i++, ct.getShop_name());
 			pstmt.setString(i++, ct.getShop_description());
+			pstmt.setString(i++, ct.getTarget());
 			pstmt.setInt(i++, ct.getCategory1());
 			pstmt.setInt(i++, ct.getCategory2());
 			pstmt.setString(i++, ct.getProduct_name());
 			pstmt.setString(i++, ct.getProduct_price());
+			pstmt.setString(i++, ct.getProduct_discount_price());
 			pstmt.setString(i++, ct.getProduct_image());
 			pstmt.setString(i++, ct.getProduct_url());
 			pstmt.setString(i++, ct.getPage_selector());
@@ -232,6 +237,19 @@ public class Connector {
 		}
 	}
 
+	public void dropTmpTable() {
+		String sql = "DROP TABLE tmp_"+Config.SERVICETABLE;
+		try {
+			pstmt=conn.prepareStatement(sql);
+			pstmt.executeUpdate();
+			conn.commit();
+		}catch(Exception e) {
+			log.debug(e.getMessage());
+		}finally {
+			close();
+		}
+	}
+	
 	public void deleteTmpTable() {
 		String sql = "DELETE FROM tmp_"+Config.SERVICETABLE;
 		try {
@@ -402,7 +420,7 @@ public class Connector {
 					pstmt.setInt(i++,pro.getProduct_price());
 					pstmt.setInt(i++,pro.getProduct_discount_price());
 					pstmt.setString(i++,pro.getCompany());
-					pstmt.setString(i++,pro.getDescription());
+					pstmt.setString(i++,pro.getTarget());
 					pstmt.setString(i++,pro.getProduct_name());
 					pstmt.setString(i++,pro.getProduct_img_url());
 					pstmt.setString(i++,pro.getProduct_url());

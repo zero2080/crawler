@@ -56,8 +56,8 @@ public class ShopInfo {
 	 * @return
 	 */
 	
-	public String insertShopInfo(String shop_url,String shop_name, String shop_description, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,String product_url, String page_selector,String page_size_selector,int page_size,int scroll_type) {
-		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, category1, category2, product_name, product_discount_price, product_price, product_image, product_url, page_selector,page_size_selector,page_size, scroll_type);
+	public String insertShopInfo(String shop_url,String shop_name, String shop_description, String target, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,String product_url, String page_selector,String page_size_selector,int page_size,int scroll_type) {
+		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, target, category1, category2, product_name, product_discount_price, product_price, product_image, product_url, page_selector,page_size_selector,page_size, scroll_type);
 		return insertShopInfo(ct);
 	}
 }

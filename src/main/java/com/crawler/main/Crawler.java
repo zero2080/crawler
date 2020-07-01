@@ -34,11 +34,11 @@ public class Crawler extends Thread{
 		serviceConn = new Connector("service");
 		
 		options = new ChromeOptions();
-//		options.addArguments("headless");
-//		options.addArguments("start-maximized");
-//		options.addArguments("disable-dev-shm-usage");
-//		options.addArguments("no-sendbox");
-//		options.addArguments("disable-gpu");
+		options.addArguments("headless");
+		options.addArguments("start-maximized");
+		options.addArguments("disable-dev-shm-usage");
+		options.addArguments("no-sendbox");
+		options.addArguments("disable-gpu");
 	}
 	
 	public Crawler(int i) {
@@ -113,14 +113,13 @@ public class Crawler extends Thread{
      			return null;
      		}
      		
-     		System.out.println(ct.toString());
-     		
      		for(int j =0;j<list.size();j++) {
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
      									ct.getShop_name(),
 										list.get(j).getText(),
 										ct.getShop_description(),
+										ct.getTarget(),
 										Integer.parseInt(priceList.get(j).getText().replaceAll("[^0-9]","")),
 										Integer.parseInt(discountpriceList.get(j).getText().replaceAll("[^0-9]","")),
 										detailLink.get(j).getAttribute("href"),

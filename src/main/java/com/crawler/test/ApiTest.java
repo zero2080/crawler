@@ -10,7 +10,7 @@ public class ApiTest {
 		ShopInfo si = new ShopInfo("org.mariadb.jdbc.Driver",
 				"jdbc:mysql://localhost:3306/crawl?characterEncoding=UTF-8", "crawler", "crawler");
 
-		String result = si.insertShopInfo("http://cooingkids.com/product/list.html?cate_no=92", "cooingkids", "kids", 0, 0,
+		String result = si.insertShopInfo("http://cooingkids.com/product/list.html?cate_no=92", "cooingkids", "kids","target", 0, 0,
 				"#contents > div > div > ul > li > div > div > div > p > a",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
@@ -21,7 +21,7 @@ public class ApiTest {
 
 		// 객체로 넘겨도됨
 		CrawllingTarget ct = new CrawllingTarget("http://cooingkids.com/product/list.html?cate_no=92", "cooingkids",
-				"kids", 0, 0, "#contents > div > div > ul > li > div > div > div > p > a",
+				"kids","target", 0, 0, "#contents > div > div > ul > li > div > div > div > p > a",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > a > img",

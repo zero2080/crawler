@@ -8,6 +8,7 @@ public class Product {
 	private String description;
 	private int product_price;
 	private int product_discount_price;
+	private String target;
 	private String product_img_url;
 	private String product_url;
 	
@@ -16,6 +17,7 @@ public class Product {
 					String company, 
 					String product_name,
 					String description,
+					String target,
 					int product_price,
 					int product_discount_price,
 					String product_url,
@@ -25,12 +27,16 @@ public class Product {
 		this.company = company;
 		this.product_name = product_name;
 		this.description=description;
+		this.target=target;
 		this.product_price = product_price;
 		this.product_discount_price = product_discount_price;
 		this.product_url = product_url;
 		this.product_img_url=product_img_url;
 	}
 	
+	public String getTarget() {
+		return target;
+	}
 	public int getCategory1() {
 		return category1;
 	}
@@ -104,6 +110,7 @@ public class Product {
 			&& this.product_name.equals(temp.product_name)
 			&& this.product_price==temp.product_price
 			&& this.description==temp.description
+			&& this.target==temp.target
 			&& this.product_discount_price==temp.product_discount_price
 			&& this.product_img_url.equals(temp.product_img_url)
 			&& this.product_url.equals(temp.product_url) ) {

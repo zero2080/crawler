@@ -6,6 +6,7 @@ public class CrawllingTarget {
 	private String shop_url;
 	private String shop_name;
 	private String shop_description;
+	private String target;
 	private int category1;
 	private int category2;
 	
@@ -38,6 +39,10 @@ public class CrawllingTarget {
 	
 	public String getShop_name() {
 		return shop_name;
+	}
+	
+	public String getTarget() {
+		return target;
 	}
 	
 	public String getShop_description() {
@@ -88,11 +93,12 @@ public class CrawllingTarget {
 		return scroll_type;
 	}
 	
-	public CrawllingTarget(String shop_url, String shop_name, String shop_description, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,
+	public CrawllingTarget(String shop_url, String shop_name, String shop_description, String target, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,
 			String product_url, String page_selector, String page_size_selector, int page_size, int scroll_type) {
 		this.shop_url = shop_url;
 		this.shop_name = shop_name;
 		this.shop_description=shop_description;
+		this.target=target;
 		this.category1 = category1;
 		this.category2 = category2;
 		this.product_name = product_name;
@@ -106,12 +112,13 @@ public class CrawllingTarget {
 		this.scroll_type = scroll_type;
 	}
 
-	public CrawllingTarget(int seq, String shop_url, String shop_name, String shop_description, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,
+	public CrawllingTarget(int seq, String shop_url, String shop_name, String shop_description, String target, int category1, int category2, String product_name, String product_price, String product_discount_price, String product_image,
 			String product_url, String page_selector,String page_size_selector, int page_size, int scroll_type) {
 		this.seq=seq;
 		this.shop_url = shop_url;
 		this.shop_name = shop_name;
 		this.shop_description=shop_description;
+		this.target=target;
 		this.category1 = category1;
 		this.category2 = category2;
 		this.product_name = product_name;

@@ -77,6 +77,7 @@ public class Config {
 			Config.SERVICETABLE		= prop.getProperty(SERVICE+".table");
 			
 			com.crawler.db.Connector conn = new com.crawler.db.Connector(TARGET);
+									 conn.dropTmpTable();
 			Config.TARGETCOUNT		= conn.getTargetCnt();
 //			conn.connClose();
 			
