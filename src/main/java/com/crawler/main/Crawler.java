@@ -114,14 +114,18 @@ public class Crawler extends Thread{
      		}
      		
      		for(int j =0;j<list.size();j++) {
+
+     			String price = new String(priceList.get(j).getText());
+				String dis_price = new String(discountpriceList.get(j).getText());
+				
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
      									ct.getShop_name(),
 										list.get(j).getText(),
 										ct.getShop_description(),
 										ct.getTarget(),
-										Integer.parseInt(priceList.get(j).getText().replaceAll("[^0-9]","")),
-										Integer.parseInt(discountpriceList.get(j).getText().replaceAll("[^0-9]","")),
+										Integer.parseInt(price.equals("")?"0":price==null?"0":price.replaceAll("[^0-9]","")),
+										Integer.parseInt(dis_price.equals("")?"0":dis_price==null?"0":dis_price.replaceAll("[^0-9]","")),
 										detailLink.get(j).getAttribute("href"),
 										imgList.get(j).getAttribute("src"));
      			tmp_page.add(p);
