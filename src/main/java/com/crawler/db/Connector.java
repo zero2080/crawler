@@ -214,7 +214,8 @@ public class Connector {
 										"  `sales_target` varchar(15) NOT NULL COMMENT '신생아(0) 유아(1) 키즈(2) 주니어(3) // 중복가능 스페이스바로 구분'," + 
 										"  `item_name` varchar(100) NOT NULL," + 
 										"  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
-										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," + 
+										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
+										"  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
 										"  `create_date` datetime NOT NULL," + 
 										"  PRIMARY KEY (`num`)" + 
 										")";
