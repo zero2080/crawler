@@ -216,9 +216,10 @@ public class Connector {
 										"  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
 										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 										"  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
+										"  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
 										"  `create_date` datetime NOT NULL," + 
 										"  PRIMARY KEY (`num`)" + 
-										")";
+										") ENGINE=InnoDB COLLATE=utf8_general_ci DEFAULT CHARSET=utf8 ";
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.executeUpdate();
@@ -277,14 +278,88 @@ public class Connector {
 	public int cleanUp() {
 		int result = 0;
 		
+		//item_sales_original존재여부 확인
 		String sql1 = "SELECT EXISTS (" + 
 					  "  SELECT 1 FROM Information_schema.tables" + 
 					  "  WHERE table_schema = '" + Config.SERVICEID + 
-					  "'  AND table_name = '" + Config.SERVICETABLE + "_original'"+
+					  "' AND table_name = '" + Config.SERVICETABLE + "_original'"+
 					  ") AS flag";
-		String sql2 = "DROP TABLE " + Config.SERVICETABLE + "_original";
-		String sql3 = "ALTER TABLE "+Config.SERVICETABLE+" RENAME TO "+Config.SERVICETABLE+"_original";
-		String sql4 = "ALTER TABLE tmp_"+Config.SERVICETABLE+" RENAME TO "+Config.SERVICETABLE;
+		
+		//item_sales_original 테이블 삭제
+		String sql2 = " DROP TABLE " 		+ Config.SERVICETABLE + "_original";
+		
+		//정리 테이블 생성
+		String sql3 = "CREATE TABLE " + Config.SERVICETABLE + "_newborn (" + 
+					  "  `num` int(11) NOT NULL AUTO_INCREMENT," + 
+					  "  `category1` int(5) NOT NULL DEFAULT 0 COMMENT '상의(0)   하의(1)   한벌옷(2)   아우터(3)   잡화(4)   악세(5)   홈웨어(6)   출산(7)   장난감(8)   체험(9)'," + 
+					  "  `category2` int(5) NOT NULL DEFAULT 0 COMMENT '(0)상의 - 0.니트/스웨터 1.반팔 2.긴팔 3.민소매 4.셔츠/블라우스 5.후드티셔츠  //  (1)하의 - 0.데님 팬츠 1.코튼 팬츠 2.스포츠/기능성 팬츠 3.스커트/치마 4.반바지/숏팬츠 5.레깅스/타이즈  //  (2)한벌옷 - 0.원피스 1.점프수트 2.기타  //  (3)아우터 - 0.후드 집업 1.재킷 2.가디건 3.패딩 4.코트  //  (4)패션잡화 - 0.백팩 1.크로스백 2.에코백 3.안경 4.캡모자/야구모자 5.비니 6.양말/기타  //  (5)악세서리 - 0.시계/주얼리 1.브로치/머리핀/헤어악세서리 2.스니커즈 3.샌들/장화 4.슬리퍼/기타  //  (6)홈웨어 - 0.여아 이너웨어 1.남아 이너웨어 2.잠옷 3.내복  //  (7)출산&신생아 - 0.샤워용품 1.침구/가구 2.임부 속옷/임부복 3.유모차/카시트 4.젖병/목욕/기저귀  //  (8)장난감&완구 - 0.장난감 1.완구 2.미니자동차 등 탈 것  //  (9)만들기 체험 - 0. 체험'," + 
+					  "  `item_price` int(10) NOT NULL DEFAULT 0 COMMENT '가격'," +
+					  "  `discount_price` int(10) NOT NULL DEFAULT 0 COMMENT '할인가격'," +
+					  "  `shop_name` varchar(50) NOT NULL COMMENT '판매자 ID'," + 
+					  "  `sales_target` varchar(15) NOT NULL COMMENT '신생아(0) 유아(1) 키즈(2) 주니어(3) // 중복가능 스페이스바로 구분'," + 
+					  "  `item_name` varchar(100) NOT NULL," + 
+					  "  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
+					  "  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
+					  "  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
+					  "  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
+					  "  `create_date` datetime NOT NULL," + 
+					  "  PRIMARY KEY (`num`)" + 
+					  ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci COMMENT='상품 테이블'";
+		
+		//기존 상품 num 값 유지 및 정보 업데이트
+		String sql4 = "INSERT INTO " + Config.SERVICETABLE + "_newborn (" +
+					  "	 SELECT	a.num, " + 
+					  "			b.category1," + 
+					  "			b.category2," + 
+					  "			b.item_price," + 
+					  "			b.discount_price," + 
+					  "			b.shop_name," + 
+					  "			b.sales_target," + 
+					  "			b.item_name," + 
+					  "			b.thumbnail_img," + 
+					  "			a.detail_url," + 
+					  "			a.sell_cnt," + 
+					  "			a.item_state," + 
+					  "			a.create_date" + 
+					  "		FROM " + Config.SERVICETABLE + " a , tmp_" + Config.SERVICETABLE + " b " + 
+					  "		WHERE a.detail_url = b.detail_url " + 
+					  ")";
+		
+		//삭제상품 상태 변경
+		String sql5 = "UPDATE " + Config.SERVICETABLE + "_newborn " + 
+					  "		SET item_state = 1	" + 
+					  "		WHERE num IN(		" + 
+					  " 		SELECT num FROM tmp_" + Config.SERVICETABLE +
+					  "				WHERE NOT detail_url IN (" + 
+					  "					SELECT detail_url FROM " + Config.SERVICETABLE + " )" + 
+					  "			)";
+		
+		//추가상품 업데이트
+		String sql6 = "INSERT INTO " + Config.SERVICETABLE +"_newborn (	" + 
+						"		category1, category2,		" + 
+						"		item_price, discount_price,	" + 
+						"		shop_name, sales_target,	" + 
+						"		item_name, thumbnail_img,	" + 
+						"		detail_url, sell_cnt,		" + 
+						"		item_state, create_date		" + 
+						"	) SELECT 	category1, category2,		" + 
+						"				item_price, discount_price,	" + 
+						"				shop_name, sales_target,	" + 
+						"				item_name, thumbnail_img,	" + 
+						"				detail_url, sell_cnt,		" + 
+						"				item_state,	create_date		" + 
+						"			 FROM tmp_" + Config.SERVICETABLE +
+						"			 WHERE NOT detail_url " +
+						"		IN(SELECT detail_url FROM " + Config.SERVICETABLE + ")";
+
+		String sql7 = "ALTER TABLE " + Config.SERVICETABLE +
+						"	RENAME TO " + Config.SERVICETABLE + "_original";
+		
+		String sql8 = "ALTER TABLE " + Config.SERVICETABLE + "_newborn" +
+						"	RENAME TO " + Config.SERVICETABLE;
+		
+		String sql9 = "DROP TABLE tmp_"	+ Config.SERVICETABLE;
+		
 		try {
 			//1. original 테이블 존재여부 확인
 			pstmt = conn.prepareStatement(sql1);
@@ -305,11 +380,42 @@ public class Connector {
 			conn.commit();
 						
 			pstmt = conn.prepareStatement(sql3);
-			pstmt.executeUpdate(); 
-			pstmt = conn.prepareStatement(sql4);
-			result = pstmt.executeUpdate();
-			
+			pstmt.executeUpdate();
 			conn.commit();
+			log.info(String.format("%s_newborn 테이블 생성 - 완료",Config.SERVICETABLE));
+			
+			//
+			pstmt = conn.prepareStatement(sql4);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("기존 상품 정보 업데이트 - 완료"));
+			
+			
+			pstmt = conn.prepareStatement(sql5);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("삭제상품 상태값 변경 - 완료"));
+			
+			pstmt = conn.prepareStatement(sql6);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("추가상품 업데이트 - 완료"));
+			
+			pstmt = conn.prepareStatement(sql7);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("기존테이블 백업 - 완료"));
+			
+			pstmt = conn.prepareStatement(sql8);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("%s_newborn -> %s - 완료(테이블명 변경)",Config.SERVICETABLE,Config.SERVICETABLE));
+			
+			pstmt = conn.prepareStatement(sql9);
+			result = pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("tmp_%s 테이블 삭제 - 완료",Config.SERVICETABLE));
+			
 			close();
 			
 			log.info("table cleanup");
