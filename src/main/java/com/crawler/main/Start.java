@@ -45,8 +45,7 @@ public class Start {
 			threadHolder++;
 		}
 		
-		int print =0;
-		
+		boolean print2 = false;
 		while(true) {
 			try {
 				Map<Integer,Boolean> trigger = new HashMap<Integer,Boolean>();
@@ -57,17 +56,22 @@ public class Start {
 				}
 				
 				StringBuffer logger;
-				
-				if(print%1000000==0) {
-					logger = new StringBuffer();
-					for(int i=0;i<trigger.size();i++) {
-						logger.append(tNames.get(i) + " : " + (trigger.get(i)?"stop":"working..."));
-						if(i+1<trigger.size()) {
-							logger.append(" / ");
+				long now = System.currentTimeMillis();
+				int print = (int)now%5000;
+				if(print==0) {
+					if(print2){
+						logger = new StringBuffer();
+						for(int i=0;i<trigger.size();i++) {
+							logger.append(tNames.get(i) + " : " + (trigger.get(i)?"stop":"working..."));
+							if(i+1<trigger.size()) {
+								logger.append(" / ");
+							}
 						}
+						log.info(logger.toString());
+						print2=false;
 					}
-					log.info(logger.toString());
-					print=0;
+				}else {
+					print2=true;
 				}
 				
 				boolean tmp = trigger.get(0);
@@ -82,7 +86,6 @@ public class Start {
 				
 				break;
 			}catch(CrawlerException e) {
-				print++;
 				continue;
 			}catch(Exception e) {
 				log.error("unknown error : "+e.getMessage());

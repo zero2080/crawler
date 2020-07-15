@@ -110,12 +110,17 @@ public class Connector {
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
+												rs.getInt(i++),
+												rs.getString(i++),
+												rs.getString(i++),
+												rs.getString(i++),
 												rs.getString(i++),
 												rs.getString(i++),
 												rs.getInt(i++),
 												rs.getInt(i++)
 											);
 				targetList.add(target);
+				log.debug(target.toString());
 			}
 			Thread.sleep(10);
 		} catch(Exception e) {
@@ -142,7 +147,7 @@ public class Connector {
 		
 		while(true) {
 			if(runnable.getResult()) {
-				result = runnable.getResult();
+				result = true;
 				break;
 			}
 		}
@@ -164,12 +169,15 @@ public class Connector {
 											  "product_price, " +
 											  "product_discount_price, " +
 											  "product_image, " + 
-											  "product_url, " + 
+											  "product_url, " +
+											  "option_selector_1, " + 
+											  "option_selector_2, " + 
+											  "option_selector_3, " + 
 											  "page_selector, " +
 											  "page_size_selector, " +
 											  "page_size, " +
 											  "scroll_type)" + 
-								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			int i = 1;
 			pstmt=conn.prepareStatement(sql);
@@ -184,6 +192,9 @@ public class Connector {
 			pstmt.setString(i++, ct.getProduct_discount_price());
 			pstmt.setString(i++, ct.getProduct_image());
 			pstmt.setString(i++, ct.getProduct_url());
+			pstmt.setString(i++, ct.getOption_selector_1());
+			pstmt.setString(i++, ct.getOption_selector_2());
+			pstmt.setString(i++, ct.getOption_selector_3());
 			pstmt.setString(i++, ct.getPage_selector());
 			pstmt.setString(i++, ct.getPage_size_selector());
 			pstmt.setInt(i++, ct.getPage_size());
@@ -215,11 +226,12 @@ public class Connector {
 										"  `item_name` varchar(100) NOT NULL," + 
 										"  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
 										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
+										"  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," + 
 										"  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
 										"  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
 										"  `create_date` datetime NOT NULL," + 
 										"  PRIMARY KEY (`num`)" + 
-										") ENGINE=InnoDB COLLATE=utf8_general_ci DEFAULT CHARSET=utf8 ";
+										") ENGINE=InnoDB DEFAULT CHARSET=utf8 ";
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.executeUpdate();
@@ -300,6 +312,7 @@ public class Connector {
 					  "  `item_name` varchar(100) NOT NULL," + 
 					  "  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
 					  "  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
+					  "  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," +
 					  "  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
 					  "  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
 					  "  `create_date` datetime NOT NULL," + 
@@ -317,7 +330,8 @@ public class Connector {
 					  "			b.sales_target," + 
 					  "			b.item_name," + 
 					  "			b.thumbnail_img," + 
-					  "			a.detail_url," + 
+					  "			a.detail_url," +
+					  "			b.options," + 
 					  "			a.sell_cnt," + 
 					  "			a.item_state," + 
 					  "			a.create_date" + 
@@ -519,9 +533,10 @@ public class Connector {
 																"	sales_target,	" + 
 																"	item_name,		" +
 																"	thumbnail_img,	" + 
-																"	detail_url,		" + 
+																"	detail_url,		" +
+																"	options,		" + 
 																"	create_date )	" +
-														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 					pstmt.setInt(i++,pro.getCategory1());
 					pstmt.setInt(i++,pro.getCategory2());
 					pstmt.setInt(i++,pro.getProduct_price());
@@ -531,7 +546,7 @@ public class Connector {
 					pstmt.setString(i++,pro.getProduct_name());
 					pstmt.setString(i++,pro.getProduct_img_url());
 					pstmt.setString(i++,pro.getProduct_url());
-					
+					pstmt.setString(i++,pro.getOptions());
 					pstmt.executeUpdate();
 					
 				}

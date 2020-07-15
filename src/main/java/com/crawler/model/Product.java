@@ -11,6 +11,7 @@ public class Product {
 	private String target;
 	private String product_img_url;
 	private String product_url;
+	private String options;
 	
 	public Product( int category1,
 					int category2,
@@ -21,7 +22,8 @@ public class Product {
 					int product_price,
 					int product_discount_price,
 					String product_url,
-					String product_img_url) {
+					String product_img_url,
+					String options) {
 		this.category1=category1;
 		this.category2=category2;
 		this.company = company;
@@ -32,6 +34,7 @@ public class Product {
 		this.product_discount_price = product_discount_price;
 		this.product_url = product_url;
 		this.product_img_url=product_img_url;
+		this.options=options;
 	}
 	
 	public String getTarget() {
@@ -93,12 +96,18 @@ public class Product {
 	public void setProduct_url(String product_url) {
 		this.product_url = product_url;
 	}
+	public String getOptions() {
+		return options;
+	}
+	public void setOptions(String options) {
+		this.options=options;
+	}
 		@Override
 	public String toString() {
 		return "Product [category1=" + category1 + ", category2=" + category2 + ", company=" + company
 				+ ", product_name=" + product_name + ", description=" + description + ", product_price=" + product_price
 				+ ", product_discount_price=" + product_discount_price + ", product_img_url=" + product_img_url
-				+ ", product_url=" + product_url + "]";
+				+ ", product_url=" + product_url + ", options=" + options + "]";
 	}
 
 	@Override
@@ -113,7 +122,8 @@ public class Product {
 			&& this.target==temp.target
 			&& this.product_discount_price==temp.product_discount_price
 			&& this.product_img_url.equals(temp.product_img_url)
-			&& this.product_url.equals(temp.product_url) ) {
+			&& this.product_url.equals(temp.product_url)
+			&& this.options.equals(temp.options)) {
 			result = true;
 		}
 		

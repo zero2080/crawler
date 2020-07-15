@@ -17,7 +17,12 @@ public class ApiTest {
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > a > img",
-				"#contents > div > div > ul > li > div > div > a.link", "&page=",null,0, 0);
+				"#contents > div > div > ul > li > div > div > a.link",
+				0,
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(1)",
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(2)",
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(3)",
+				"&page=",null,0, 0);
 
 		System.out.println("String Parameter : " + result);
 
@@ -29,7 +34,12 @@ public class ApiTest {
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > div > ul > li.product_price",
 				"#contents > div > div > ul > li > div > div > a > img",
-				"#contents > div > div > ul > li > div > div > a.link", "&page=",null,0, 0);
+				"#contents > div > div > ul > li > div > div > a.link",
+				0,
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(1)",
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(2)",
+				"#contents > div > div > ul > li > div > div > div > ul > li:nth-child(3)",
+				"&page=",null,0, 0);
 
 		System.out.println("Obaject Parameter : " + si.insertShopInfo(ct));
 

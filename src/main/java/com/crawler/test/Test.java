@@ -1,6 +1,11 @@
 package com.crawler.test;
 
+import java.util.List;
+
 import com.crawler.config.Config;
+import com.crawler.main.Crawler;
+import com.crawler.model.CrawllingTarget;
+import com.crawler.model.Product;
 
 public class Test {
 	
@@ -63,9 +68,9 @@ public class Test {
 //		System.out.println(String.format("product cnt : %d", pList.size()));
 //	}
 	
-	public static void main(String[] args) {
-		Config.setConfig(args[0]);
-		System.out.println(new com.crawler.db.Connector("service").cleanUp());
-	}
+//	public static void main(String[] args) {
+//		Config.setConfig(args[0]);
+//		System.out.println(new com.crawler.db.Connector("service").cleanUp());
+//	}
 }
 	
