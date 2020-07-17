@@ -128,7 +128,7 @@ public class Crawler extends Thread{
 										Integer.parseInt(dis_price.equals("")?"0":dis_price==null?"0":dis_price.replaceAll("[^0-9]","")),
 										detailLink.get(j).getAttribute("href"),
 										imgList.get(j).getAttribute("src"),
-										"{option1:"+ct.getOption_selector_1()+", option2:"+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+", option3:"+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"}"
+										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
 										);
      			tmp_page.add(p);
      		}

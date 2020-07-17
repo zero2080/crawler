@@ -33,6 +33,7 @@ public class ShopInfo {
 	 * @param shop_url			shopping mall URL address / ex) http://cooingkids.com/product/list.html?cate_no=92
 	 * @param shop_name			shopping mall name / ex) 쿠잉키즈
 	 * @param shop_description	ex) 유럽감성 어쩌구저쩌구
+	 * @param target			상품 대상
 	 * @param category1 		상품 분류1 / 상의(0)   하의(1)   한벌옷(2)   아우터(3)   잡화(4)   악세(5)   홈웨어(6)   출산(7)   장난감(8)   체험(9)
 	 * @param category2 		상품 분류2 / 상의(0)		- 0.니트/스웨터		1.반팔							2.긴팔 					3.민소매		4.셔츠/블라우스		5.후드티셔츠  
 	 * 										 하의(1)		- 0.데님 팬츠 		1.코튼 팬츠						2.스포츠/기능성 팬츠	3.스커트/치마	4.반바지/숏팬츠		5.레깅스/타이즈 

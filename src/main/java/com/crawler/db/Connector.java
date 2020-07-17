@@ -98,26 +98,26 @@ public class Connector {
 			while(rs.next()) {
 				int i = 1;
 				CrawllingTarget target = new CrawllingTarget(
-												rs.getInt(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getInt(i++),
-												rs.getInt(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getInt(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getString(i++),
-												rs.getInt(i++),
-												rs.getInt(i++)
+												rs.getInt("seq"),
+												rs.getString("shop_url"),
+												rs.getString("shop_name"),
+												rs.getString("shop_description"),
+												rs.getString("target"),
+												rs.getInt("category1"),
+												rs.getInt("category2"),
+												rs.getString("product_name"),
+												rs.getString("product_price"),
+												rs.getString("product_discount_price"),
+												rs.getString("product_image"),
+												rs.getString("product_url"),
+												rs.getInt("option_type"),
+												rs.getString("option_selector_1"),
+												rs.getString("option_selector_2"),
+												rs.getString("option_selector_3"),
+												rs.getString("page_selector"),
+												rs.getString("page_size_selector"),
+												rs.getInt("page_size"),
+												rs.getInt("scroll_type")
 											);
 				targetList.add(target);
 				log.debug(target.toString());
@@ -170,6 +170,7 @@ public class Connector {
 											  "product_discount_price, " +
 											  "product_image, " + 
 											  "product_url, " +
+											  "option_type, " +
 											  "option_selector_1, " + 
 											  "option_selector_2, " + 
 											  "option_selector_3, " + 
@@ -177,7 +178,7 @@ public class Connector {
 											  "page_size_selector, " +
 											  "page_size, " +
 											  "scroll_type)" + 
-								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+								 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			int i = 1;
 			pstmt=conn.prepareStatement(sql);
@@ -192,6 +193,7 @@ public class Connector {
 			pstmt.setString(i++, ct.getProduct_discount_price());
 			pstmt.setString(i++, ct.getProduct_image());
 			pstmt.setString(i++, ct.getProduct_url());
+			pstmt.setInt(i++, ct.getOption_type());
 			pstmt.setString(i++, ct.getOption_selector_1());
 			pstmt.setString(i++, ct.getOption_selector_2());
 			pstmt.setString(i++, ct.getOption_selector_3());
