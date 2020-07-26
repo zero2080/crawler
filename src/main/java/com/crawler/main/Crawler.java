@@ -117,11 +117,12 @@ public class Crawler extends Thread{
 
      			String price = new String(priceList.get(j).getText());
 				String dis_price = new String(discountpriceList.get(j).getText());
+				String product_name = list.get(j).getText().replace(",", "，");
 				
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
      									ct.getShop_name(),
-										list.get(j).getText(),
+										product_name,
 										ct.getShop_description(),
 										ct.getTarget(),
 										Integer.parseInt(price.equals("")?"0":price==null?"0":price.replaceAll("[^0-9]","")),
@@ -189,7 +190,7 @@ public class Crawler extends Thread{
 			log.debug(String.format("%s : Crawler running",tName));
 			
 			if(list==null || list.size()==0) {
-				//타켓 정보 수정 요청테이블에 정보 입력
+				//타겟 정보 수정 요청테이블에 정보 입력
 				throw new Exception("CrawllingTarget List is empty");
 			}
 			boolean[] tmp = new boolean[list.size()];

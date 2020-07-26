@@ -96,7 +96,6 @@ public class Connector {
 			log.debug(String.format("query = SELECT * FROM target_info ORDER BY seq LIMIT %d,%d",startRow,Config.THREADUNIT));
 			
 			while(rs.next()) {
-				int i = 1;
 				CrawllingTarget target = new CrawllingTarget(
 												rs.getInt("seq"),
 												rs.getString("shop_url"),
