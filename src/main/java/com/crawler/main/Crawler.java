@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -34,11 +35,11 @@ public class Crawler extends Thread{
 		serviceConn = new Connector("service");
 		
 		options = new ChromeOptions();
-		options.addArguments("headless");
-		options.addArguments("start-maximized");
-		options.addArguments("disable-dev-shm-usage");
-		options.addArguments("no-sendbox");
-		options.addArguments("disable-gpu");
+//		options.addArguments("headless");
+//		options.addArguments("start-maximized");
+//		options.addArguments("disable-dev-shm-usage");
+//		options.addArguments("no-sendbox");
+//		options.addArguments("disable-gpu");
 	}
 	
 	public Crawler(int i) {
@@ -91,33 +92,59 @@ public class Crawler extends Thread{
 			}
 			
 			//제품이름
-     		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct_name()));
+     		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct()));
+     		
      		//이미지 url
-     		List<WebElement> imgList = webDriver.findElements(By.cssSelector(ct.getProduct_image()));
+//     		List<WebElement> imgList = webDriver.findElements(By.cssSelector(ct.getProduct_image()));
+     		
      		//기본가격
-     		List<WebElement> priceList = webDriver.findElements(By.cssSelector(ct.getProduct_price()));
+//     		List<WebElement> priceList = webDriver.findElements(By.cssSelector(ct.getProduct_price()));
+     		
      		//할인가격
-     		List<WebElement> discountpriceList = webDriver.findElements(By.cssSelector(ct.getProduct_discount_price()));
+//     		List<WebElement> discountpriceList = webDriver.findElements(By.cssSelector(ct.getProduct_discount_price()));
+     		
      		//제품 상세페이지 URL
-     		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
+//     		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
+     		
      		
      		if(list.size()==0) {
      			log.debug("list size : 0");
      			break;
      		}
 
-     		if(list.size()!=imgList.size() 
- 				|| imgList.size() != priceList.size()
- 				|| priceList.size() != detailLink.size()){
-     			log.info(String.format("Crawlling result miss match \n list size : %d \n img list size : %d \n price list size : %d \n detail urllink size : %d",list.size(),imgList.size(),priceList.size(),detailLink.size()));
-     			return null;
-     		}
+//     		if(list.size()!=imgList.size() 
+// 				|| imgList.size() != priceList.size()
+// 				|| priceList.size() != detailLink.size()){
+//     			log.info(String.format("Crawlling result miss match \n list size : %d \n img list size : %d \n price list size : %d \n detail urllink size : %d",list.size(),imgList.size(),priceList.size(),detailLink.size()));
+//     			
+//     			for(int c = 0; c < list.size();c++) {
+//     				
+//     			}
+//     			
+//     			return null;
+//     		}
      		
      		for(int j =0;j<list.size();j++) {
-
-     			String price = new String(priceList.get(j).getText());
-				String dis_price = new String(discountpriceList.get(j).getText());
-				String product_name = list.get(j).getText().replace(",", "，");
+     			
+     			String price = "";
+     			String dis_price = "";
+     			try {
+     				price = new String(list.get(j).findElement(By.cssSelector(ct.getProduct_price())).getText());
+     				price = price.replaceAll("[^0-9]","");
+     			}catch(NoSuchElementException e	) {
+     				log.error(e.getMessage());
+     			}
+     			try {
+     				dis_price = new String(list.get(j).findElement(By.cssSelector(ct.getProduct_discount_price())).getText());
+     				if(dis_price.indexOf("(")>=0) {
+     					dis_price=dis_price.substring(0,dis_price.indexOf("("));
+     				}
+     			}catch(NoSuchElementException e	) {
+     				log.error(e.getMessage());
+     			}
+				String product_name = list.get(j).findElement(By.cssSelector(ct.getProduct_name())).getText().replace(",", "，");
+				String detailLink = list.get(j).findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
+				String img = list.get(j).findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
 				
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
@@ -125,13 +152,14 @@ public class Crawler extends Thread{
 										product_name,
 										ct.getShop_description(),
 										ct.getTarget(),
-										Integer.parseInt(price.equals("")?"0":price==null?"0":price.replaceAll("[^0-9]","")),
-										Integer.parseInt(dis_price.equals("")?"0":dis_price==null?"0":dis_price.replaceAll("[^0-9]","")),
-										detailLink.get(j).getAttribute("href"),
-										imgList.get(j).getAttribute("src"),
+										Integer.parseInt(price),
+										Integer.parseInt(dis_price.equals("")?price:dis_price==null?price:dis_price.replaceAll("[^0-9]","")),
+										detailLink,
+										img,
 										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
 										);
      			tmp_page.add(p);
+// 				log.debug(String.format("product name : %s / options : %s", p.getProduct_name(),p.getOptions()));
      		}
      		
      		if(i>0) {
@@ -216,7 +244,8 @@ public class Crawler extends Thread{
 			Thread.sleep(10);
 		} catch(Exception e){
 			log.info(e.getMessage());
-//			e.printStackTrace();
+			e.printStackTrace();
+			
 		}
 	}
 	

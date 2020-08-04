@@ -104,6 +104,7 @@ public class Connector {
 												rs.getString("target"),
 												rs.getInt("category1"),
 												rs.getInt("category2"),
+												rs.getString("product"),
 												rs.getString("product_name"),
 												rs.getString("product_price"),
 												rs.getString("product_discount_price"),
@@ -141,7 +142,6 @@ public class Connector {
 		}
 		
 		Runnable2 runnable = new Runnable2(list);
-		
 		runnable.run();
 		
 		while(true) {
@@ -228,7 +228,6 @@ public class Connector {
 										"  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
 										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 										"  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," + 
-										"  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
 										"  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
 										"  `create_date` datetime NOT NULL," + 
 										"  PRIMARY KEY (`num`)" + 
@@ -314,7 +313,6 @@ public class Connector {
 					  "  `thumbnail_img` mediumtext NOT NULL COMMENT '썸네일 이미지'," + 
 					  "  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 					  "  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," +
-					  "  `sell_cnt` int NOT NULL DEFAULT 0 COMMENT '판매갯수'," +
 					  "  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
 					  "  `create_date` datetime NOT NULL," + 
 					  "  PRIMARY KEY (`num`)" + 
@@ -333,7 +331,6 @@ public class Connector {
 					  "			b.thumbnail_img," + 
 					  "			a.detail_url," +
 					  "			b.options," + 
-					  "			a.sell_cnt," + 
 					  "			a.item_state," + 
 					  "			a.create_date" + 
 					  "		FROM " + Config.SERVICETABLE + " a , tmp_" + Config.SERVICETABLE + " b " + 
@@ -355,14 +352,12 @@ public class Connector {
 						"		item_price, discount_price,	" + 
 						"		shop_name, sales_target,	" + 
 						"		item_name, thumbnail_img,	" + 
-						"		detail_url, sell_cnt,		" + 
-						"		item_state, create_date		" + 
+						"		detail_url, options, item_state, create_date	" + 
 						"	) SELECT 	category1, category2,		" + 
 						"				item_price, discount_price,	" + 
 						"				shop_name, sales_target,	" + 
 						"				item_name, thumbnail_img,	" + 
-						"				detail_url, sell_cnt,		" + 
-						"				item_state,	create_date		" + 
+						"				detail_url, options, item_state,	create_date	" + 
 						"			 FROM tmp_" + Config.SERVICETABLE +
 						"			 WHERE NOT detail_url " +
 						"		IN(SELECT detail_url FROM " + Config.SERVICETABLE + ")";
@@ -399,12 +394,10 @@ public class Connector {
 			conn.commit();
 			log.info(String.format("%s_newborn 테이블 생성 - 완료",Config.SERVICETABLE));
 			
-			//
 			pstmt = conn.prepareStatement(sql4);
 			pstmt.executeUpdate();
 			conn.commit();
 			log.info(String.format("기존 상품 정보 업데이트 - 완료"));
-			
 			
 			pstmt = conn.prepareStatement(sql5);
 			pstmt.executeUpdate();

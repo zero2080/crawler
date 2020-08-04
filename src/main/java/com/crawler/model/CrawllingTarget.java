@@ -11,6 +11,7 @@ public class CrawllingTarget {
 	private int category2;
 	
 	//css selector
+	private String product;
 	private String product_name;
 	private String product_price;
 	private String product_discount_price;
@@ -61,6 +62,9 @@ public class CrawllingTarget {
 		return category2;
 	}
 	
+	public String getProduct() {
+		return product;
+	}
 	public String getProduct_name() {
 		return product_name;
 	}
@@ -114,7 +118,8 @@ public class CrawllingTarget {
 	}
 	
 	public CrawllingTarget(	String shop_url, String shop_name, String shop_description, 
-							String target, int category1, int category2, String product_name, 
+							String target, int category1, int category2, 
+							String product, String product_name, 
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
@@ -125,6 +130,7 @@ public class CrawllingTarget {
 		this.target=target;
 		this.category1 = category1;
 		this.category2 = category2;
+		this.product = product;
 		this.product_name = product_name;
 		this.product_price = product_price;
 		this.product_discount_price = product_discount_price;
@@ -141,7 +147,8 @@ public class CrawllingTarget {
 	}
 
 	public CrawllingTarget(	int seq, String shop_url, String shop_name, String shop_description,
-							String target, int category1, int category2, String product_name,
+							String target, int category1, int category2,
+							String product, String product_name,
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
@@ -153,6 +160,7 @@ public class CrawllingTarget {
 		this.target=target;
 		this.category1 = category1;
 		this.category2 = category2;
+		this.product = product;
 		this.product_name = product_name;
 		this.product_price = product_price;
 		this.product_discount_price = product_discount_price;
@@ -172,7 +180,7 @@ public class CrawllingTarget {
 	public String toString() {
 		return "CrawllingTarget [seq=" + seq + ", shop_url=" + shop_url + ", shop_name=" + shop_name
 				+ ", shop_description=" + shop_description + ", target=" + target + ", category1=" + category1
-				+ ", category2=" + category2 + ", product_name=" + product_name + ", product_price=" + product_price
+				+ ", category2=" + category2 + ", product=" + product + ", product_name=" + product_name + ", product_price=" + product_price
 				+ ", product_discount_price=" + product_discount_price + ", product_image=" + product_image
 				+ ", product_url=" + product_url + ", option_type=" + option_type + ", option_selector_1=" + option_selector_1
 				+ ", option_selector_2=" + option_selector_2 + ", option_selector_3=" + option_selector_3
