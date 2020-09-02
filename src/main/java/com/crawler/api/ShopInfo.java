@@ -45,6 +45,7 @@ public class ShopInfo {
 	 *										 출산&신생아(7) - 0.샤워용품		1.침구/가구						2.임부 속옷/임부복		3.유모차/카시트	4.젖병/목욕/기저귀
 	 *										 장난감&완구(8) - 0.장난감			1.완구							2.미니자동차 등 탈 것
 	 *										 만들기 체험(9) - 0.체험
+	 * @param select_type		옵션 선택시 선택 리스트 추가 여부 / 0 : 추가됨 / 1 : 추가 안됨 가격변경 
 	 * @param product_name		css selector / ex) #container>div>div>ul>li>p
 	 * @param product_price		css selector / ex) #container>div>div>ul>li>span
 	 * @param product_discount_price	css selector / ex) #container>div>div>ul>li>span
@@ -54,6 +55,7 @@ public class ShopInfo {
 	 * @param option_selector_1	css selector / 	
 	 * @param option_selector_2	css selector
 	 * @param option_selector_3	css selector
+	 * @param price_selector	css selector / ex) #container>div>div>ul>li>span
 	 * @param page_selector		css selector / ex) &page=
 	 * @param page_size_selector	css selector / ex) &pageSize=
 	 * @param page_size			product count in a page / 한페이지 안에 들어가는 상품 수 / 0=사용안함
@@ -61,8 +63,8 @@ public class ShopInfo {
 	 * @return
 	 */
 	
-	public String insertShopInfo(String shop_url,String shop_name, String shop_description, String target, int category1, int category2, String product, String product_name, String product_price, String product_discount_price, String product_image,String product_url, int option_type, String option_selector_1,String option_selector_2,String option_selector_3, String page_selector,String page_size_selector,int page_size,int scroll_type) {
-		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, target, category1, category2, product, product_name, product_discount_price, product_price, product_image, product_url, option_type, option_selector_1,option_selector_2,option_selector_3, page_selector,page_size_selector,page_size, scroll_type);
+	public String insertShopInfo(String shop_url,String shop_name, String shop_description, String target, int category1, int category2, String product, String product_name, String product_price, String product_discount_price, String product_image,String product_url, int option_type, String option_selector_1,String option_selector_2,String option_selector_3,int select_type, String price_selector, String page_selector,String page_size_selector,int page_size,int scroll_type) {
+		CrawllingTarget ct = new CrawllingTarget(shop_url, shop_name, shop_description, target, category1, category2, product, product_name, product_discount_price, product_price, product_image, product_url, option_type, option_selector_1,option_selector_2,option_selector_3, select_type, price_selector, page_selector,page_size_selector,page_size, scroll_type);
 		return insertShopInfo(ct);
 	}
 }

@@ -20,7 +20,6 @@ import com.crawler.model.Product;
 public class Crawler extends Thread{
 	private static final Logger log = LogManager.getLogger(Crawler.class);
 	
-	@SuppressWarnings("unused")
 	private WebDriverWait wait;
 	private ChromeDriver webDriver;
 	private ChromeOptions options;
@@ -35,21 +34,38 @@ public class Crawler extends Thread{
 		serviceConn = new Connector("service");
 		
 		options = new ChromeOptions();
-//		options.addArguments("headless");
-//		options.addArguments("start-maximized");
-//		options.addArguments("disable-dev-shm-usage");
-//		options.addArguments("no-sendbox");
-//		options.addArguments("disable-gpu");
+		
+		if(System.getProperty("os.name").toLowerCase().indexOf("window")==-1) {
+			//리눅스용 옵션
+			options.addArguments("--no-sandbox"); // Bypass OS security model, MUST BE THE VERY FIRST OPTION
+	        options.addArguments("--headless");
+	        options.setExperimentalOption("useAutomationExtension", false);
+	        options.addArguments("start-maximized"); // open Browser in maximized mode
+	        options.addArguments("disable-infobars"); // disabling infobars
+	        options.addArguments("--disable-extensions"); // disabling extensions
+	        options.addArguments("--disable-gpu"); // applicable to windows os only
+	        options.addArguments("--disable-dev-shm-usage"); // overcome limited resource problems
+	        options.addArguments("--single-process");
+		}else {
+//			options.addArguments("headless");
+//			options.addArguments("start-maximized");
+//			options.addArguments("no-sendbox");
+//			options.addArguments("disable-dev-shm-usage");
+//			options.addArguments("disable-gpu");
+		}
+		
 	}
 	
 	public Crawler(int i) {
 		this();
-		if(round==0) {
-			try {
-				serviceConn.createTmpTable();
-			}catch(Exception e) {
-				log.info(e.getMessage());
-				serviceConn.deleteTmpTable();
+		if(Config.TEST == null || !Config.TEST.equals("test")) {
+			if(round==0) {
+				try {
+					serviceConn.createTmpTable();
+				}catch(Exception e) {
+					log.info(e.getMessage());
+					serviceConn.deleteTmpTable();
+				}
 			}
 		}
 	}
@@ -57,6 +73,7 @@ public class Crawler extends Thread{
 	//크롤링
 	public List<Product> getProductList(CrawllingTarget ct) {
 		webDriver = new ChromeDriver(options);
+		wait = new WebDriverWait(webDriver,10);
 		List<Product> pArr = new ProductList<Product>();
 		List<Product> page = new ProductList<Product>();
 		
@@ -65,32 +82,45 @@ public class Crawler extends Thread{
 		for(int i = 1; true;i++) {
 			List<Product> tmp_page = new ProductList<Product>();
 			
-			String pageUrl = "";
+			String pageUrl = ct.getShop_url();
 			
-			if(ct.getPage_size()==0) {
-				pageUrl=ct.getShop_url()+ct.getPage_selector()+i;
+			if(ct.getScroll_type()==0) {
+				log.debug("page type");
+				if(ct.getPage_size()==0) {
+					pageUrl+=ct.getPage_selector()+i;
+				}else {
+					pageUrl+=ct.getPage_selector()+i+ct.getPage_size_selector()+ct.getPage_size();
+				}
+				
+				webDriver.get(pageUrl);
+				long height = 0;
+				
+				for(int j=1;true;j++) {
+					height = (Long)webDriver.executeScript("return window.scrollY");
+					webDriver.executeScript("window.scrollTo(0,"+(j*500)+");");
+					
+					long tmpheight = (Long)webDriver.executeScript("return window.scrollY");
+					
+					if(height==tmpheight) {
+						break;
+					}
+				}
 			}else {
-				pageUrl=ct.getShop_url()+ct.getPage_selector()+i+ct.getPage_size_selector()+ct.getPage_size();
-			}
-			
-			webDriver.get(pageUrl);
-			long height = 0;
-			
-			for(int j=1;true;j++) {
+				log.debug("infinit scroll");
+				webDriver.get(pageUrl);
+				long height = 0;
 				
-				height = (Long)webDriver.executeScript("return window.scrollY");
-						
-				wait = new WebDriverWait(webDriver,10);
-				webDriver.executeScript("window.scrollTo(0,"+(j*500)+");");
-				wait = new WebDriverWait(webDriver,10);
-				
-				long tmpheight = (Long)webDriver.executeScript("return window.scrollY");
-				
-				if(height==tmpheight) {
-					break;
+				for(int j=1;true;j++) {
+					height = (Long)webDriver.executeScript("return window.scrollY");
+					webDriver.executeScript("window.scrollTo(0,"+(j*500)+");");
+					
+					long tmpheight = (Long)webDriver.executeScript("return window.scrollY");
+					
+					if(height==tmpheight) {
+						break;
+					}
 				}
 			}
-			
 			//제품이름
      		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct()));
      		
@@ -125,26 +155,33 @@ public class Crawler extends Thread{
 //     		}
      		
      		for(int j =0;j<list.size();j++) {
-     			
+     			WebElement elem = list.get(j);
      			String price = "";
+     			int parsePrice = 0;
      			String dis_price = "";
+     			
      			try {
-     				price = new String(list.get(j).findElement(By.cssSelector(ct.getProduct_price())).getText());
-     				price = price.replaceAll("[^0-9]","");
-     			}catch(NoSuchElementException e	) {
-     				log.error(e.getMessage());
-     			}
-     			try {
-     				dis_price = new String(list.get(j).findElement(By.cssSelector(ct.getProduct_discount_price())).getText());
+     				dis_price = new String(elem.findElement(By.cssSelector(ct.getProduct_discount_price())).getText());
      				if(dis_price.indexOf("(")>=0) {
      					dis_price=dis_price.substring(0,dis_price.indexOf("("));
      				}
+     				dis_price = dis_price.replaceAll("[^0-9]","");
      			}catch(NoSuchElementException e	) {
      				log.error(e.getMessage());
      			}
-				String product_name = list.get(j).findElement(By.cssSelector(ct.getProduct_name())).getText().replace(",", "，");
-				String detailLink = list.get(j).findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
-				String img = list.get(j).findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
+     			try {
+     				price = new String(elem.findElement(By.cssSelector(ct.getProduct_price())).getText());
+     				price = price.replaceAll("[^0-9]","");
+     				parsePrice = Integer.parseInt(price);
+     			}catch(NoSuchElementException e	) {
+     				log.error(e.getMessage());
+     			}catch(NumberFormatException ne) {
+     				price = dis_price;
+     			}
+				String product_name = elem.findElement(By.cssSelector(ct.getProduct_name())).getText();
+						product_name = product_name.replaceAll(",", "，");
+				String detailLink = elem.findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
+				String img = elem.findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
 				
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
@@ -152,8 +189,8 @@ public class Crawler extends Thread{
 										product_name,
 										ct.getShop_description(),
 										ct.getTarget(),
-										Integer.parseInt(price),
-										Integer.parseInt(dis_price.equals("")?price:dis_price==null?price:dis_price.replaceAll("[^0-9]","")),
+										parsePrice,
+										Integer.parseInt(dis_price.equals("")?price:dis_price==null?price:dis_price),
 										detailLink,
 										img,
 										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
@@ -165,7 +202,6 @@ public class Crawler extends Thread{
      		if(i>0) {
      			if(!page.equals(tmp_page)) {
      				page = tmp_page;
-     				
      			}else {
      				log.debug(String.format(" page : %s \n\r\t\t\t\t\t tmp_page : %s", page.toString(),tmp_page.toString()));
      				log.debug("same_page");
@@ -206,9 +242,14 @@ public class Crawler extends Thread{
 	public void run() {
 		// TODO Auto-generated method stub
 		tName=Thread.currentThread().getName();
-		List<CrawllingTarget> list = targetConn.getTargetList(round);
+		List<CrawllingTarget> list ;
+		if(Config.TEST != null && Config.TEST.equals("test")) {
+			list = targetConn.getTestRow();
+		}else {
+			list = targetConn.getTargetList(round);
+		}
 		try {
-			if(list.size()==0) {
+			if(list==null || list.size()==0) {
 				threadEnd=true;
 				throw new Exception("CrawllingTarget List is empty");
 			}
@@ -217,10 +258,6 @@ public class Crawler extends Thread{
 			
 			log.debug(String.format("%s : Crawler running",tName));
 			
-			if(list==null || list.size()==0) {
-				//타겟 정보 수정 요청테이블에 정보 입력
-				throw new Exception("CrawllingTarget List is empty");
-			}
 			boolean[] tmp = new boolean[list.size()];
 			for(int i = 0;i<list.size();i++) {
 				log.info(String.format("%s - Crawlling start - %s",Thread.currentThread().getName() , list.get(i).getShop_name()));
@@ -254,7 +291,6 @@ public class Crawler extends Thread{
 	}
 	
 	public void close() {
-		
 		try {
 			targetConn.connClose();
 		}catch(Exception e) {
@@ -266,5 +302,14 @@ public class Crawler extends Thread{
 			log.error(e.getMessage());
 		}
 		
+	}
+	
+	public void browserClose() {
+		try {
+			webDriver.close();
+			webDriver.quit();
+		}catch(Exception e) {
+			log.error(e.getMessage());
+		}
 	}
 }

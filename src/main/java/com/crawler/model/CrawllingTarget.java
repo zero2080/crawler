@@ -9,6 +9,7 @@ public class CrawllingTarget {
 	private String target;
 	private int category1;
 	private int category2;
+	private int select_type;
 	
 	//css selector
 	private String product;
@@ -21,6 +22,7 @@ public class CrawllingTarget {
 	private String option_selector_1;
 	private String option_selector_2;
 	private String option_selector_3;
+	private String price_selector;
 	
 	// URL page qyery / ex) &page=
 	private String page_selector;
@@ -101,6 +103,15 @@ public class CrawllingTarget {
 		return option_selector_3;
 	}
 	
+	public int getSelect_type() {
+		return select_type;
+	}
+	public void setSelect_type(int select_type) {
+		this.select_type=select_type;
+	}
+	public String getPrice_selector() {
+		return price_selector;
+	}
 	public String getPage_selector() {
 		return page_selector;
 	}
@@ -117,13 +128,15 @@ public class CrawllingTarget {
 		return scroll_type;
 	}
 	
-	public CrawllingTarget(	String shop_url, String shop_name, String shop_description, 
-							String target, int category1, int category2, 
+	public CrawllingTarget(	String shop_url, String shop_name,
+							String shop_description, String target,
+							int category1, int category2, 
 							String product, String product_name, 
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
-							String page_selector, String page_size_selector, int page_size, int scroll_type) {
+							int select_type, String price_selector, String page_selector, String page_size_selector, 
+							int page_size, int scroll_type) {
 		this.shop_url = shop_url;
 		this.shop_name = shop_name;
 		this.shop_description=shop_description;
@@ -140,19 +153,23 @@ public class CrawllingTarget {
 		this.option_selector_1 = option_selector_1;
 		this.option_selector_2 = option_selector_2;
 		this.option_selector_3 = option_selector_3;
+		this.select_type=select_type;
+		this.price_selector = price_selector;
 		this.page_selector = page_selector;
 		this.page_size_selector = page_size_selector;
 		this.page_size = page_size;
 		this.scroll_type = scroll_type;
 	}
 
-	public CrawllingTarget(	int seq, String shop_url, String shop_name, String shop_description,
-							String target, int category1, int category2,
+	public CrawllingTarget(	int seq, String shop_url, String shop_name, 
+							String shop_description, String target,
+							int category1, int category2,
 							String product, String product_name,
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
-							String page_selector,String page_size_selector, int page_size, int scroll_type) {
+							int select_type, String price_selector, String page_selector,String page_size_selector, 
+							int page_size, int scroll_type) {
 		this.seq=seq;
 		this.shop_url = shop_url;
 		this.shop_name = shop_name;
@@ -170,6 +187,8 @@ public class CrawllingTarget {
 		this.option_selector_1 = option_selector_1;
 		this.option_selector_2 = option_selector_2;
 		this.option_selector_3 = option_selector_3;
+		this.select_type = select_type;
+		this.price_selector=price_selector;
 		this.page_selector = page_selector;
 		this.page_size_selector = page_size_selector;
 		this.page_size = page_size;
@@ -180,12 +199,13 @@ public class CrawllingTarget {
 	public String toString() {
 		return "CrawllingTarget [seq=" + seq + ", shop_url=" + shop_url + ", shop_name=" + shop_name
 				+ ", shop_description=" + shop_description + ", target=" + target + ", category1=" + category1
-				+ ", category2=" + category2 + ", product=" + product + ", product_name=" + product_name + ", product_price=" + product_price
-				+ ", product_discount_price=" + product_discount_price + ", product_image=" + product_image
-				+ ", product_url=" + product_url + ", option_type=" + option_type + ", option_selector_1=" + option_selector_1
-				+ ", option_selector_2=" + option_selector_2 + ", option_selector_3=" + option_selector_3
-				+ ", page_selector=" + page_selector + ", page_size_selector=" + page_size_selector
-				+ ", page_size=" + page_size + ", scroll_type=" + scroll_type + "]";
+				+ ", category2=" + category2 + ", product=" + product + ", product_name=" + product_name
+				+ ", product_price=" + product_price + ", product_discount_price=" + product_discount_price
+				+ ", product_image=" + product_image + ", product_url=" + product_url + ", option_type=" + option_type
+				+ ", option_selector_1=" + option_selector_1 + ", option_selector_2=" + option_selector_2
+				+ ", option_selector_3=" + option_selector_3 + ", select_tyle=" + select_type + ", price_selector=" + price_selector + ", page_selector="
+				+ page_selector + ", page_size_selector=" + page_size_selector + ", page_size=" + page_size
+				+ ", scroll_type=" + scroll_type + "]";
 	}
 }
 

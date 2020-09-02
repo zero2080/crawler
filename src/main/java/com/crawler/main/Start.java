@@ -12,6 +12,7 @@ import com.crawler.exception.CrawlerException;
 public class Start {
 	public static final Logger log = LogManager.getLogger(Start.class);
 	public static void main(String[] args) {
+		
 		long start = System.currentTimeMillis();
 		
 		Config.setConfig(args[0]);

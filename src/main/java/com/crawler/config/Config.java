@@ -28,7 +28,6 @@ public class Config {
 	public	static			String	TARGETPW		= null;
 	public	static			String	TARGETVERIFYQUERY= null;
 	
-	
 	public	static			String	SERVICEDRIVER	= null;
 	public	static			String	SERVICEURL		= null;
 	public	static			String	SERVICEID		= null;
@@ -41,6 +40,8 @@ public class Config {
 	
 	public 	static			int		TARGETCOUNT		= 0;
 	public 	static			int		THREADROUND	= 0;
+	public	static			String	TEST;
+	
 	
 	private static Config instance;
 	
@@ -54,39 +55,66 @@ public class Config {
 	}
 	
 	private Config(String config) {
-		try {
-			Properties prop = new Properties();
-			prop.load(new FileInputStream(config));
+		if(config.contentEquals("test")) {
+			TEST="test";
+
+			Config.THREADCNT		= 1;
+			Config.THREADUNIT		= 1;
+			Config.BROWSERDRVIER	= "chromedriver"+(OS.indexOf("window")>=0?".exe":"");
+			Config.ROOTPATH			= System.getProperty("user.dir")+"/../lib/";
 			
-			Config.THREADCNT		= Integer.valueOf(prop.getProperty("crawler.parallel.degree"));
-			Config.THREADUNIT		= Integer.valueOf(prop.getProperty("crawler.parallel.unit"));
-			Config.BROWSERDRVIER	= prop.getProperty("crawler.browserdriver")+(OS.indexOf("window")>=0?".exe":"");
-			Config.ROOTPATH			= System.getProperty("user.dir")+'/'+prop.getProperty("crawler.driverPath");
+			Config.TARGETDRIVER		= "org.mariadb.jdbc.Driver";
+			Config.TARGETURL		= "jdbc:mysql://192.168.0.73:3306/crawl?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull";
+			Config.TARGETID			= "crawler";
+			Config.TARGETPW			= "crawler";
+			Config.TARGETVERIFYQUERY= "SELECT NOW()";
 			
-			Config.TARGETDRIVER		= prop.getProperty(TARGET+DRIVER);
-			Config.TARGETURL		= prop.getProperty(TARGET+URL);
-			Config.TARGETID			= prop.getProperty(TARGET+ID);
-			Config.TARGETPW			= prop.getProperty(TARGET+PW);
-			Config.TARGETVERIFYQUERY= prop.getProperty(TARGET+VERIFYQUERY);
-			
-			Config.SERVICEDRIVER	= prop.getProperty(SERVICE+DRIVER);
-			Config.SERVICEURL		= prop.getProperty(SERVICE+URL);
-			Config.SERVICEID		= prop.getProperty(SERVICE+ID);
-			Config.SERVICEPW		= prop.getProperty(SERVICE+PW);
-			Config.SERVICEVERIFYQUERY= prop.getProperty(SERVICE+VERIFYQUERY);
-			Config.SERVICETABLE		= prop.getProperty(SERVICE+".table");
+			Config.SERVICEDRIVER	= "org.mariadb.jdbc.Driver";
+			Config.SERVICEURL		= "jdbc:mysql://localhost:3306/baily?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull";
+			Config.SERVICEID		= "baily";
+			Config.SERVICEPW		= "baily";
+			Config.SERVICEVERIFYQUERY= "SELECT NOW()";
+			Config.SERVICETABLE		= "item_sales";
 			
 			com.crawler.db.Connector conn = new com.crawler.db.Connector(TARGET);
 									 conn.dropTmpTable();
 			Config.TARGETCOUNT		= conn.getTargetCnt();
-//			conn.connClose();
-			
-			log.info(String.format("==============Config setting Ok==============="));
-		}catch(Exception e) {
-			e.printStackTrace();
-			help();
+			log.info(String.format("==============Test Config setting Ok==============="));
+		}else {
+			try {
+				Properties prop = new Properties();
+				prop.load(new FileInputStream(config));
+				
+				Config.THREADCNT		= Integer.valueOf(prop.getProperty("crawler.parallel.degree"));
+				Config.THREADUNIT		= Integer.valueOf(prop.getProperty("crawler.parallel.unit"));
+				Config.BROWSERDRVIER	= prop.getProperty("crawler.browserdriver")+(OS.indexOf("window")>=0?".exe":"");
+				Config.ROOTPATH			= System.getProperty("user.dir")+'/'+prop.getProperty("crawler.driverPath");
+				
+				Config.TARGETDRIVER		= prop.getProperty(TARGET+DRIVER);
+				Config.TARGETURL		= prop.getProperty(TARGET+URL);
+				Config.TARGETID			= prop.getProperty(TARGET+ID);
+				Config.TARGETPW			= prop.getProperty(TARGET+PW);
+				Config.TARGETVERIFYQUERY= prop.getProperty(TARGET+VERIFYQUERY);
+				
+				Config.SERVICEDRIVER	= prop.getProperty(SERVICE+DRIVER);
+				Config.SERVICEURL		= prop.getProperty(SERVICE+URL);
+				Config.SERVICEID		= prop.getProperty(SERVICE+ID);
+				Config.SERVICEPW		= prop.getProperty(SERVICE+PW);
+				Config.SERVICEVERIFYQUERY= prop.getProperty(SERVICE+VERIFYQUERY);
+				Config.SERVICETABLE		= prop.getProperty(SERVICE+".table");
+				
+				com.crawler.db.Connector conn = new com.crawler.db.Connector(TARGET);
+//										 conn.dropTmpTable();
+				Config.TARGETCOUNT		= conn.getTargetCnt();
+	//			conn.connClose();
+				
+				log.info(String.format("==============Config setting Ok==============="));
+			}catch(Exception e) {
+				e.printStackTrace();
+				help();
+			}
 		}
-	};
+	}
 	
 	public static void help() {
 		System.out.println("java -cp [jar filePath] -Dlog4j.configurationFile=./log4j2.xml -jar crawler-1.0-all.jar");

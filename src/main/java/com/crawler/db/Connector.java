@@ -17,6 +17,7 @@ import com.crawler.model.Product;
 
 public class Connector {
 	private static final Logger log = LogManager.getLogger(Connector.class);
+	private String thisClass = null;
 	private Connection conn = null;
 	private PreparedStatement pstmt = null;
 	private ResultSet rs = null;
@@ -34,23 +35,44 @@ public class Connector {
 		try {
 			
 			if(target.equals("target")) {
+				
 				//크롤링 대상 정보가 있는 DB connection생성
 				//쇼핑몰 정보 입력할때도 target을 사용
 				Class.forName(Config.TARGETDRIVER);
+				
 				conn = DriverManager.getConnection(	Config.TARGETURL,
 													Config.TARGETID,
 													Config.TARGETPW);
+				
 				pstmt = conn.prepareStatement(Config.TARGETVERIFYQUERY);
 				
+				ResultSet tmp = pstmt.executeQuery();
+				tmp.next();
+				System.out.println(tmp.getString(1));
+				tmp=null;
+				
+				thisClass = "target";
 			}else if(target.equals("service")) {
 				//크롤링 결과를 저장할 DB connection생성
+				
 				Class.forName(Config.SERVICEDRIVER);
+				
+				
+				
 				conn = DriverManager.getConnection(	Config.SERVICEURL,
 													Config.SERVICEID,
 													Config.SERVICEPW);
 				
+				
 				pstmt = conn.prepareStatement(Config.SERVICEVERIFYQUERY);
 				
+				
+				ResultSet tmp = pstmt.executeQuery();
+				tmp.next();
+				System.out.println(tmp.getString(1));
+				tmp=null;
+				
+				thisClass = "service";
 			}
 			
 			conn.setAutoCommit(false);
@@ -63,7 +85,7 @@ public class Connector {
 				System.out.println("create connection error!!");
 			}
 		}catch(Exception e) {
-			log.error(String.format("!!!! create connection error !!!! - ", e.getMessage()));
+			log.error(String.format("!!!! create connection error !!!! - %s", e.getMessage()));
 		}finally {
 			close();
 		}
@@ -76,6 +98,59 @@ public class Connector {
 		}
 		return conn;
 	}
+	public List<CrawllingTarget> getTestRow(){
+		if(conn==null) {
+			log.info(String.format("not create connector. create connector first"));
+			return null;
+		}
+		List<CrawllingTarget> targetList = new ArrayList<CrawllingTarget>();
+		String sql = "SELECT * FROM target_info ORDER BY seq desc LIMIT 1";
+		
+		try {
+			rs = pstmt.executeQuery(sql);
+			
+			log.debug(String.format("query = %s",sql));
+			
+			if(rs.next()) {
+				CrawllingTarget target = new CrawllingTarget(
+												rs.getInt("seq"),
+												rs.getString("shop_url"),
+												rs.getString("shop_name"),
+												rs.getString("shop_description"),
+												rs.getString("target"),
+												rs.getInt("category1"),
+												rs.getInt("category2"),
+												rs.getString("product"),
+												rs.getString("product_name"),
+												rs.getString("product_price"),
+												rs.getString("product_discount_price"),
+												rs.getString("product_image"),
+												rs.getString("product_url"),
+												rs.getInt("option_type"),
+												rs.getString("option_selector_1"),
+												rs.getString("option_selector_2"),
+												rs.getString("option_selector_3"),
+												rs.getInt("select_type"),
+												null,
+												rs.getString("page_selector"),
+												rs.getString("page_size_selector"),
+												rs.getInt("page_size"),
+												rs.getInt("scroll_type")
+											);
+				targetList.add(target);
+				log.debug(target.toString());
+			}
+			Thread.sleep(10);
+		} catch(Exception e) {
+			log.error(String.format("!!!! query error !!!! - %s", e.getMessage()));
+			rollback();
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		return targetList;
+	}
+	
 	
 	public List<CrawllingTarget> getTargetList(int round){
 		if(conn==null) {
@@ -114,6 +189,8 @@ public class Connector {
 												rs.getString("option_selector_1"),
 												rs.getString("option_selector_2"),
 												rs.getString("option_selector_3"),
+												rs.getInt("select_type"),
+												null,
 												rs.getString("page_selector"),
 												rs.getString("page_size_selector"),
 												rs.getInt("page_size"),
@@ -252,15 +329,17 @@ public class Connector {
 	}
 
 	public void dropTmpTable() {
-		String sql = "DROP TABLE tmp_"+Config.SERVICETABLE;
-		try {
-			pstmt=conn.prepareStatement(sql);
-			pstmt.executeUpdate();
-			conn.commit();
-		}catch(Exception e) {
-			log.debug(e.getMessage());
-		}finally {
-			close();
+		if(thisClass.equals("service")) {
+			String sql = "DROP TABLE tmp_"+Config.SERVICETABLE;
+			try {
+				pstmt=conn.prepareStatement(sql);
+				pstmt.executeUpdate();
+				conn.commit();
+			}catch(Exception e) {
+				log.debug(e.getMessage());
+			}finally {
+				close();
+			}
 		}
 	}
 	
@@ -365,10 +444,13 @@ public class Connector {
 		String sql7 = "ALTER TABLE " + Config.SERVICETABLE +
 						"	RENAME TO " + Config.SERVICETABLE + "_original";
 		
-		String sql8 = "ALTER TABLE " + Config.SERVICETABLE + "_newborn" +
+		String sql8 = "UPDATE item_sales_newborn SET detail_url=REPLACE(detail_url,'http:','https:')";
+		
+		String sql9 = "ALTER TABLE " + Config.SERVICETABLE + "_newborn" +
 						"	RENAME TO " + Config.SERVICETABLE;
 		
-		String sql9 = "DROP TABLE tmp_"	+ Config.SERVICETABLE;
+		String sql10 = "DROP TABLE tmp_"	+ Config.SERVICETABLE;
+		
 		
 		try {
 			//1. original 테이블 존재여부 확인
@@ -417,9 +499,14 @@ public class Connector {
 			pstmt = conn.prepareStatement(sql8);
 			pstmt.executeUpdate();
 			conn.commit();
-			log.info(String.format("%s_newborn -> %s - 완료(테이블명 변경)",Config.SERVICETABLE,Config.SERVICETABLE));
+			log.info(String.format("http > https"));
 			
 			pstmt = conn.prepareStatement(sql9);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("%s_newborn -> %s - 완료(테이블명 변경)",Config.SERVICETABLE,Config.SERVICETABLE));
+			
+			pstmt = conn.prepareStatement(sql10);
 			result = pstmt.executeUpdate();
 			conn.commit();
 			log.info(String.format("tmp_%s 테이블 삭제 - 완료",Config.SERVICETABLE));

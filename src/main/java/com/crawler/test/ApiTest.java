@@ -1,11 +1,22 @@
 package com.crawler.test;
 
 import com.crawler.api.ShopInfo;
+import com.crawler.config.Config;
+import com.crawler.main.Crawler;
 import com.crawler.model.CrawllingTarget;
 
 public class ApiTest {
+	//테스트 크롤러
 	public static void main(String[] args) {
-
+		long start = System.currentTimeMillis();
+		
+		Config.setConfig("test");
+		
+		Crawler c = new Crawler(0);
+		Crawler.round=0;
+		c.start();
+	}
+	public static void main2(String[] args) {
 		// api 객체 생성
 		ShopInfo si = new ShopInfo("org.mariadb.jdbc.Driver",
 				"jdbc:mysql://localhost:3306/crawl?characterEncoding=UTF-8", "crawler", "crawler");
@@ -41,6 +52,8 @@ public class ApiTest {
 				"#product_option_id1 > option",
 				"#product_option_id2 > option",
 				null,
+				0,
+				"",
 				"&page=",null,0, 0);
 //		CrawllingTarget ct = new CrawllingTarget(
 //				"http://woimam.com/shop/shopbrand.html?type=O&xcode=014", "워아이맘",
@@ -56,6 +69,5 @@ public class ApiTest {
 //				null,
 //				"&page=",null,0, 0);
 		System.out.println("Obaject Parameter : " + si.insertShopInfo(ct));
-
 	}
 }
