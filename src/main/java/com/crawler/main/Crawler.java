@@ -1,6 +1,7 @@
 package com.crawler.main;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -121,7 +122,7 @@ public class Crawler extends Thread{
 					}
 				}
 			}
-			//제품이름
+			//제품
      		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct()));
      		
      		//이미지 url
@@ -160,28 +161,67 @@ public class Crawler extends Thread{
      			int parsePrice = 0;
      			String dis_price = "";
      			
-     			try {
-     				dis_price = new String(elem.findElement(By.cssSelector(ct.getProduct_discount_price())).getText());
-     				if(dis_price.indexOf("(")>=0) {
-     					dis_price=dis_price.substring(0,dis_price.indexOf("("));
-     				}
-     				dis_price = dis_price.replaceAll("[^0-9]","");
-     			}catch(NoSuchElementException e	) {
-     				log.error(e.getMessage());
+     			if(priceChecker(ct.getProduct_discount_price())) {
+     				try {
+     					String script = String.format("return document.querySelectorAll('"+ct.getProduct()+" "+ct.getProduct_price()+"')[%d].innerText.replace(/\\n/g,'').replace(/ +/g,'');",j);
+     					String priceBox = (String)webDriver.executeScript(script);
+     					
+     					StringTokenizer st = new StringTokenizer(priceBox,"원");
+	     				
+	     				st.nextToken();
+	     				price = st.nextToken().replaceAll("[^0-9]", "");
+	     				parsePrice = Integer.parseInt(price);
+	     				dis_price = st.nextToken().replaceAll("[^0-9]", "");
+	     				
+	     			}catch(NoSuchElementException e	) {
+	     				log.error(e.getMessage());
+	     			}
+     			}else {
+     				try {
+	     				dis_price = new String(elem.findElement(By.cssSelector(ct.getProduct_discount_price())).getText());
+	     				if(dis_price.indexOf("(")>=0) {
+	     					dis_price=dis_price.substring(0,dis_price.indexOf("("));
+	     				}
+	     				dis_price = dis_price.replaceAll("[^0-9]","");
+	     			}catch(NoSuchElementException e	) {
+	     				log.error(e.getMessage());
+	     			}
+	     			try {
+	     				price = new String(elem.findElement(By.cssSelector(ct.getProduct_price())).getText());
+	     				price = price.replaceAll("[^0-9]","");
+	     				parsePrice = Integer.parseInt(price);
+	     			}catch(NoSuchElementException e	) {
+	     				log.error(e.getMessage());
+	     			}catch(NumberFormatException ne) {
+	     				price = dis_price;
+	     			}
      			}
-     			try {
-     				price = new String(elem.findElement(By.cssSelector(ct.getProduct_price())).getText());
-     				price = price.replaceAll("[^0-9]","");
-     				parsePrice = Integer.parseInt(price);
-     			}catch(NoSuchElementException e	) {
-     				log.error(e.getMessage());
-     			}catch(NumberFormatException ne) {
-     				price = dis_price;
-     			}
+	     			
 				String product_name = elem.findElement(By.cssSelector(ct.getProduct_name())).getText();
 						product_name = product_name.replaceAll(",", "，");
 				String detailLink = elem.findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
 				String img = elem.findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
+				String soldoutChecker = ct.getSoldout_checker();
+				int item_state = 0;
+				if(soldoutChecker!=null && !soldoutChecker.trim().equals("")) {
+					StringTokenizer st = new StringTokenizer(soldoutChecker,"$$");
+					WebElement tmp =null;
+					try {
+						tmp = elem.findElement(By.cssSelector(st.nextToken()));
+					}catch(Exception e) {
+						System.out.println("194 soldout checker error : "+e.getMessage());
+					}
+					if(tmp!=null) {
+						String text;
+						if(st.nextToken().equals("0")) {
+							text = tmp.getAttribute("alt");
+						}else {
+							text = tmp.getAttribute("src");
+						}
+						item_state = text.indexOf(st.nextToken())>-1?1:0;
+						log.info(String.format("this item soldout / shop : %s / item : %s /soldout : %s",ct.getShop_name(),product_name,item_state==0?"정상":"품절"));
+					}
+				}
 				
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
@@ -193,6 +233,7 @@ public class Crawler extends Thread{
 										Integer.parseInt(dis_price.equals("")?price:dis_price==null?price:dis_price),
 										detailLink,
 										img,
+										item_state,
 										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
 										);
      			tmp_page.add(p);
@@ -246,6 +287,7 @@ public class Crawler extends Thread{
 		if(Config.TEST != null && Config.TEST.equals("test")) {
 			list = targetConn.getTestRow();
 		}else {
+			log.info(String.format("start thread / round : %d", round));
 			list = targetConn.getTargetList(round);
 		}
 		try {
@@ -261,9 +303,7 @@ public class Crawler extends Thread{
 			boolean[] tmp = new boolean[list.size()];
 			for(int i = 0;i<list.size();i++) {
 				log.info(String.format("%s - Crawlling start - %s",Thread.currentThread().getName() , list.get(i).getShop_name()));
-				
 //				List<?> pList = getProductList(ct);	//리플렉션으로 어떤 객체도 올수있게
-				
 				log.info(String.format("Crawlling Target : %s / Crawl Description : %s", list.get(i).getShop_name(),list.get(i).getShop_description()));
 				
 				List<Product> pList = getProductList(list.get(i));
@@ -282,7 +322,14 @@ public class Crawler extends Thread{
 		} catch(Exception e){
 			log.info(e.getMessage());
 			e.printStackTrace();
-			
+		}
+	}
+	
+	public boolean priceChecker(String priceChecker) {
+		if(priceChecker.indexOf("script")==0) {
+			return true;
+		}else {
+			return false;
 		}
 	}
 	

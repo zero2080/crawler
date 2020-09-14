@@ -34,6 +34,7 @@ public class Config {
 	public	static			String	SERVICEPW		= null;
 	public	static			String	SERVICEVERIFYQUERY= null;
 	public	static			String	SERVICETABLE	= null;
+	public	static			String	SERVICEDB		= null;
 	
 	public	static			int		THREADCNT		= 0;
 	public	static			int		THREADUNIT		= 0;
@@ -102,6 +103,7 @@ public class Config {
 				Config.SERVICEPW		= prop.getProperty(SERVICE+PW);
 				Config.SERVICEVERIFYQUERY= prop.getProperty(SERVICE+VERIFYQUERY);
 				Config.SERVICETABLE		= prop.getProperty(SERVICE+".table");
+				Config.SERVICEDB		= prop.getProperty(SERVICE+".db");
 				
 				com.crawler.db.Connector conn = new com.crawler.db.Connector(TARGET);
 //										 conn.dropTmpTable();

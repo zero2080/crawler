@@ -54,6 +54,7 @@ public class ApiTest {
 				null,
 				0,
 				"",
+				"0$$품절",
 				"&page=",null,0, 0);
 //		CrawllingTarget ct = new CrawllingTarget(
 //				"http://woimam.com/shop/shopbrand.html?type=O&xcode=014", "워아이맘",

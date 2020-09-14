@@ -11,6 +11,7 @@ public class Product {
 	private String target;
 	private String product_img_url;
 	private String product_url;
+	private int item_state;
 	private String options;
 	
 	public Product( int category1,
@@ -23,6 +24,7 @@ public class Product {
 					int product_discount_price,
 					String product_url,
 					String product_img_url,
+					int item_state,
 					String options) {
 		this.category1=category1;
 		this.category2=category2;
@@ -34,6 +36,7 @@ public class Product {
 		this.product_discount_price = product_discount_price;
 		this.product_url = product_url;
 		this.product_img_url=product_img_url;
+		this.item_state=item_state;
 		this.options=options;
 	}
 	
@@ -96,6 +99,12 @@ public class Product {
 	public void setProduct_url(String product_url) {
 		this.product_url = product_url;
 	}
+	public int getItem_state() {
+		return item_state;
+	}
+	public void setItem_state(int item_state) {
+		this.item_state=item_state;
+	}
 	public String getOptions() {
 		return options;
 	}
@@ -123,6 +132,7 @@ public class Product {
 			&& this.product_discount_price==temp.product_discount_price
 			&& this.product_img_url.equals(temp.product_img_url)
 			&& this.product_url.equals(temp.product_url)
+			&& this.item_state==temp.item_state
 			&& this.options.equals(temp.options)) {
 			result = true;
 		}

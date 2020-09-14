@@ -132,6 +132,7 @@ public class Connector {
 												rs.getString("option_selector_3"),
 												rs.getInt("select_type"),
 												null,
+												rs.getString("soldout_checker"),
 												rs.getString("page_selector"),
 												rs.getString("page_size_selector"),
 												rs.getInt("page_size"),
@@ -191,6 +192,7 @@ public class Connector {
 												rs.getString("option_selector_3"),
 												rs.getInt("select_type"),
 												null,
+												rs.getString("soldout_checker"),
 												rs.getString("page_selector"),
 												rs.getString("page_size_selector"),
 												rs.getInt("page_size"),
@@ -372,7 +374,7 @@ public class Connector {
 		//item_sales_original존재여부 확인
 		String sql1 = "SELECT EXISTS (" + 
 					  "  SELECT 1 FROM Information_schema.tables" + 
-					  "  WHERE table_schema = '" + Config.SERVICEID + 
+					  "  WHERE table_schema = '" + Config.SERVICEDB+ 
 					  "' AND table_name = '" + Config.SERVICETABLE + "_original'"+
 					  ") AS flag";
 		
@@ -410,7 +412,7 @@ public class Connector {
 					  "			b.thumbnail_img," + 
 					  "			a.detail_url," +
 					  "			b.options," + 
-					  "			a.item_state," + 
+					  "			b.item_state," + 
 					  "			a.create_date" + 
 					  "		FROM " + Config.SERVICETABLE + " a , tmp_" + Config.SERVICETABLE + " b " + 
 					  "		WHERE a.detail_url = b.detail_url " + 
@@ -436,7 +438,7 @@ public class Connector {
 						"				item_price, discount_price,	" + 
 						"				shop_name, sales_target,	" + 
 						"				item_name, thumbnail_img,	" + 
-						"				detail_url, options, item_state,	create_date	" + 
+						"				detail_url, options, item_state, create_date	" + 
 						"			 FROM tmp_" + Config.SERVICETABLE +
 						"			 WHERE NOT detail_url " +
 						"		IN(SELECT detail_url FROM " + Config.SERVICETABLE + ")";
@@ -444,7 +446,7 @@ public class Connector {
 		String sql7 = "ALTER TABLE " + Config.SERVICETABLE +
 						"	RENAME TO " + Config.SERVICETABLE + "_original";
 		
-		String sql8 = "UPDATE item_sales_newborn SET detail_url=REPLACE(detail_url,'http:','https:')";
+		String sql8 = "UPDATE item_sales_newborn SET detail_url=REPLACE(detail_url,'http:','https:') WHERE shop_name!='헤네스'";
 		
 		String sql9 = "ALTER TABLE " + Config.SERVICETABLE + "_newborn" +
 						"	RENAME TO " + Config.SERVICETABLE;
@@ -616,11 +618,12 @@ public class Connector {
 																"	thumbnail_img,	" + 
 																"	detail_url,		" +
 																"	options,		" + 
+																"	item_state,		" +	
 																"	create_date )	" +
-														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 					pstmt.setInt(i++,pro.getCategory1());
 					pstmt.setInt(i++,pro.getCategory2());
-					pstmt.setInt(i++,pro.getProduct_price());
+					pstmt.setInt(i++,pro.getProduct_price()==0?pro.getProduct_discount_price():pro.getProduct_price());
 					pstmt.setInt(i++,pro.getProduct_discount_price());
 					pstmt.setString(i++,pro.getCompany());
 					pstmt.setString(i++,pro.getTarget());
@@ -628,6 +631,7 @@ public class Connector {
 					pstmt.setString(i++,pro.getProduct_img_url());
 					pstmt.setString(i++,pro.getProduct_url());
 					pstmt.setString(i++,pro.getOptions());
+					pstmt.setInt(i++, pro.getItem_state());
 					pstmt.executeUpdate();
 					
 				}

@@ -23,6 +23,7 @@ public class CrawllingTarget {
 	private String option_selector_2;
 	private String option_selector_3;
 	private String price_selector;
+	private String soldout_checker;
 	
 	// URL page qyery / ex) &page=
 	private String page_selector;
@@ -128,6 +129,13 @@ public class CrawllingTarget {
 		return scroll_type;
 	}
 	
+	public String getSoldout_checker() {
+		return soldout_checker;
+	}
+	public void setSoldout_checker(String soldout_checker) {
+		this.soldout_checker=soldout_checker;
+	}
+	
 	public CrawllingTarget(	String shop_url, String shop_name,
 							String shop_description, String target,
 							int category1, int category2, 
@@ -135,7 +143,8 @@ public class CrawllingTarget {
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
-							int select_type, String price_selector, String page_selector, String page_size_selector, 
+							int select_type, String price_selector, String soldout_checker, 
+							String page_selector, String page_size_selector, 
 							int page_size, int scroll_type) {
 		this.shop_url = shop_url;
 		this.shop_name = shop_name;
@@ -155,6 +164,7 @@ public class CrawllingTarget {
 		this.option_selector_3 = option_selector_3;
 		this.select_type=select_type;
 		this.price_selector = price_selector;
+		this.soldout_checker=soldout_checker;
 		this.page_selector = page_selector;
 		this.page_size_selector = page_size_selector;
 		this.page_size = page_size;
@@ -168,7 +178,8 @@ public class CrawllingTarget {
 							String product_price, String product_discount_price,
 							String product_image, String product_url, int option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
-							int select_type, String price_selector, String page_selector,String page_size_selector, 
+							int select_type, String price_selector, String soldout_checker,
+							String page_selector,String page_size_selector, 
 							int page_size, int scroll_type) {
 		this.seq=seq;
 		this.shop_url = shop_url;
@@ -189,6 +200,7 @@ public class CrawllingTarget {
 		this.option_selector_3 = option_selector_3;
 		this.select_type = select_type;
 		this.price_selector=price_selector;
+		this.soldout_checker=soldout_checker;
 		this.page_selector = page_selector;
 		this.page_size_selector = page_size_selector;
 		this.page_size = page_size;
@@ -203,8 +215,8 @@ public class CrawllingTarget {
 				+ ", product_price=" + product_price + ", product_discount_price=" + product_discount_price
 				+ ", product_image=" + product_image + ", product_url=" + product_url + ", option_type=" + option_type
 				+ ", option_selector_1=" + option_selector_1 + ", option_selector_2=" + option_selector_2
-				+ ", option_selector_3=" + option_selector_3 + ", select_tyle=" + select_type + ", price_selector=" + price_selector + ", page_selector="
-				+ page_selector + ", page_size_selector=" + page_size_selector + ", page_size=" + page_size
+				+ ", option_selector_3=" + option_selector_3 + ", select_tyle=" + select_type + ", price_selector=" + price_selector 
+				+ ", soldout_checker=" + soldout_checker + ", page_selector=" + page_selector + ", page_size_selector=" + page_size_selector + ", page_size=" + page_size
 				+ ", scroll_type=" + scroll_type + "]";
 	}
 }
