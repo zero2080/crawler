@@ -16,7 +16,7 @@ public class Product {
 	
 	public Product( int category1,
 					int category2,
-					String company, 
+					String company,
 					String product_name,
 					String description,
 					String target,
@@ -111,12 +111,14 @@ public class Product {
 	public void setOptions(String options) {
 		this.options=options;
 	}
-		@Override
+
+	@Override
 	public String toString() {
-		return "Product [category1=" + category1 + ", category2=" + category2 + ", company=" + company
-				+ ", product_name=" + product_name + ", description=" + description + ", product_price=" + product_price
-				+ ", product_discount_price=" + product_discount_price + ", product_img_url=" + product_img_url
-				+ ", product_url=" + product_url + ", options=" + options + "]";
+		return "Product [category1=" + category1 + ", category2=" + category2 + ", company=" + company + 
+					  ", product_name=" + product_name + ", description=" + description + 
+					  ", product_price=" + product_price + ", product_discount_price=" + product_discount_price + 
+					  ", target=" + target + ", product_img_url=" + product_img_url + 
+					  ", product_url=" + product_url + ", item_state=" + item_state + ", options=" + options + "]";
 	}
 
 	@Override

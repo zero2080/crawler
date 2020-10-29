@@ -21,6 +21,7 @@ import com.crawler.model.Product;
 public class Crawler extends Thread{
 	private static final Logger log = LogManager.getLogger(Crawler.class);
 	
+	@SuppressWarnings("unused")
 	private WebDriverWait wait;
 	private ChromeDriver webDriver;
 	private ChromeOptions options;
@@ -54,7 +55,6 @@ public class Crawler extends Thread{
 //			options.addArguments("disable-dev-shm-usage");
 //			options.addArguments("disable-gpu");
 		}
-		
 	}
 	
 	public Crawler(int i) {
@@ -125,42 +125,30 @@ public class Crawler extends Thread{
 			//제품
      		List<WebElement> list = webDriver.findElements(By.cssSelector(ct.getProduct()));
      		
-     		//이미지 url
-//     		List<WebElement> imgList = webDriver.findElements(By.cssSelector(ct.getProduct_image()));
-     		
-     		//기본가격
-//     		List<WebElement> priceList = webDriver.findElements(By.cssSelector(ct.getProduct_price()));
-     		
-     		//할인가격
-//     		List<WebElement> discountpriceList = webDriver.findElements(By.cssSelector(ct.getProduct_discount_price()));
-     		
-     		//제품 상세페이지 URL
-//     		List<WebElement> detailLink = webDriver.findElements(By.cssSelector(ct.getProduct_url()));
-     		
-     		
      		if(list.size()==0) {
      			log.debug("list size : 0");
      			break;
      		}
-
-//     		if(list.size()!=imgList.size() 
-// 				|| imgList.size() != priceList.size()
-// 				|| priceList.size() != detailLink.size()){
-//     			log.info(String.format("Crawlling result miss match \n list size : %d \n img list size : %d \n price list size : %d \n detail urllink size : %d",list.size(),imgList.size(),priceList.size(),detailLink.size()));
-//     			
-//     			for(int c = 0; c < list.size();c++) {
-//     				
-//     			}
-//     			
-//     			return null;
-//     		}
-     		
+//			스크린샷 코드
+//     		TakesScreenshot screenshot = (TakesScreenshot)webDriver;
+// 			byte[] bytes = screenshot.getScreenshotAs(OutputType.BYTES);
+// 			try {
+// 				FileOutputStream fos = new FileOutputStream("C:/Develop/shot.png");
+// 				fos.write(bytes);
+// 				fos.close();
+// 			}catch(Exception e) {
+// 				e.printStackTrace();
+// 			}
+// 			
      		for(int j =0;j<list.size();j++) {
      			WebElement elem = list.get(j);
+     			String product_name = elem.findElement(By.cssSelector(ct.getProduct_name())).getText().trim();
+					   product_name = product_name.replaceAll(",", "，");
+					   product_name = product_name.replaceAll("\n", " ");
+					   product_name = product_name.replaceAll("★사은품증정★ ", "");
      			String price = "";
      			int parsePrice = 0;
      			String dis_price = "";
-     			
      			if(priceChecker(ct.getProduct_discount_price())) {
      				try {
      					String script = String.format("return document.querySelectorAll('"+ct.getProduct()+" "+ct.getProduct_price()+"')[%d].innerText.replace(/\\n/g,'').replace(/ +/g,'');",j);
@@ -174,7 +162,13 @@ public class Crawler extends Thread{
 	     				dis_price = st.nextToken().replaceAll("[^0-9]", "");
 	     				
 	     			}catch(NoSuchElementException e	) {
-	     				log.error(e.getMessage());
+	     				String err_msg = e.getMessage();
+	     				int next_line_idx = err_msg.indexOf("\n");
+	     				if(next_line_idx>0) {
+	     					err_msg = err_msg.substring(0,next_line_idx);
+	     				}
+	     				
+	     				log.error(String.format("Price setting error: %s",err_msg));
 	     			}
      			}else {
      				try {
@@ -184,32 +178,49 @@ public class Crawler extends Thread{
 	     				}
 	     				dis_price = dis_price.replaceAll("[^0-9]","");
 	     			}catch(NoSuchElementException e	) {
-	     				log.error(e.getMessage());
+	     				String err_msg = e.getMessage();
+	     				int next_line_idx = err_msg.indexOf("\n");
+	     				if(next_line_idx>0) {
+	     					err_msg = err_msg.substring(0,next_line_idx);
+	     				}
+	     				
+	     				log.error(err_msg);
 	     			}
 	     			try {
 	     				price = new String(elem.findElement(By.cssSelector(ct.getProduct_price())).getText());
 	     				price = price.replaceAll("[^0-9]","");
 	     				parsePrice = Integer.parseInt(price);
 	     			}catch(NoSuchElementException e	) {
-	     				log.error(e.getMessage());
+	     				String err_msg = e.getMessage();
+	     				int next_line_idx = err_msg.indexOf("\n");
+	     				if(next_line_idx>0) {
+	     					err_msg = err_msg.substring(0,next_line_idx);
+	     				}
+	     				
+	     				log.error(err_msg);
 	     			}catch(NumberFormatException ne) {
 	     				price = dis_price;
 	     			}
      			}
-	     			
-				String product_name = elem.findElement(By.cssSelector(ct.getProduct_name())).getText();
-						product_name = product_name.replaceAll(",", "，");
+	     		
+				
 				String detailLink = elem.findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
 				String img = elem.findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
 				String soldoutChecker = ct.getSoldout_checker();
 				int item_state = 0;
+				
 				if(soldoutChecker!=null && !soldoutChecker.trim().equals("")) {
 					StringTokenizer st = new StringTokenizer(soldoutChecker,"$$");
 					WebElement tmp =null;
 					try {
 						tmp = elem.findElement(By.cssSelector(st.nextToken()));
 					}catch(Exception e) {
-						System.out.println("194 soldout checker error : "+e.getMessage());
+						String err_msg = e.getMessage();
+	     				int next_line_idx = err_msg.indexOf("\n");
+	     				if(next_line_idx>0) {
+	     					err_msg = err_msg.substring(0,next_line_idx);
+	     				}
+						log.error("soldout checker error : "+err_msg);
 					}
 					if(tmp!=null) {
 						String text;
@@ -222,7 +233,7 @@ public class Crawler extends Thread{
 						log.info(String.format("this item soldout / shop : %s / item : %s /soldout : %s",ct.getShop_name(),product_name,item_state==0?"정상":"품절"));
 					}
 				}
-				
+				String resultPrice = dis_price==null?price:dis_price.trim().equals("")?price:dis_price;
      			Product p = new Product(ct.getCategory1(),
      									ct.getCategory2(),
      									ct.getShop_name(),
@@ -230,29 +241,26 @@ public class Crawler extends Thread{
 										ct.getShop_description(),
 										ct.getTarget(),
 										parsePrice,
-										Integer.parseInt(dis_price.equals("")?price:dis_price==null?price:dis_price),
+										resultPrice.equals("")?0:Integer.parseInt(resultPrice),
 										detailLink,
 										img,
-										item_state,
+										resultPrice.equals("")?1:item_state,
 										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
 										);
      			tmp_page.add(p);
-// 				log.debug(String.format("product name : %s / options : %s", p.getProduct_name(),p.getOptions()));
      		}
      		
      		if(i>0) {
      			if(!page.equals(tmp_page)) {
      				page = tmp_page;
      			}else {
-     				log.debug(String.format(" page : %s \n\r\t\t\t\t\t tmp_page : %s", page.toString(),tmp_page.toString()));
+     				log.debug(String.format(" page : %s \n\t\t\t\t\t tmp_page : %s", page.toString(),tmp_page.toString()));
      				log.debug("same_page");
      				break;
      			}
      		}
      		
-     		for(Product p:tmp_page) {
-     			pArr.add(p);
-     		}
+     		pArr.addAll(tmp_page);
 		}
 		webDriver.quit();
 		

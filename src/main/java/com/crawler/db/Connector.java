@@ -48,9 +48,8 @@ public class Connector {
 				
 				ResultSet tmp = pstmt.executeQuery();
 				tmp.next();
-				System.out.println(tmp.getString(1));
+				log.info(tmp.getString(1));
 				tmp=null;
-				
 				thisClass = "target";
 			}else if(target.equals("service")) {
 				//크롤링 결과를 저장할 DB connection생성
@@ -69,7 +68,7 @@ public class Connector {
 				
 				ResultSet tmp = pstmt.executeQuery();
 				tmp.next();
-				System.out.println(tmp.getString(1));
+				log.info(tmp.getString(1));
 				tmp=null;
 				
 				thisClass = "service";
@@ -82,7 +81,7 @@ public class Connector {
 			if(rs.next()) {
 				log.debug(String.format("DB Connect - %s / URL = %s",rs.getString(1),target.equals("target")?Config.TARGETURL:Config.SERVICEURL));
 			}else {
-				System.out.println("create connection error!!");
+				log.error("create connection error!!");
 			}
 		}catch(Exception e) {
 			log.error(String.format("!!!! create connection error !!!! - %s", e.getMessage()));
@@ -126,7 +125,7 @@ public class Connector {
 												rs.getString("product_discount_price"),
 												rs.getString("product_image"),
 												rs.getString("product_url"),
-												rs.getInt("option_type"),
+												rs.getString("option_type"),
 												rs.getString("option_selector_1"),
 												rs.getString("option_selector_2"),
 												rs.getString("option_selector_3"),
@@ -144,7 +143,7 @@ public class Connector {
 			Thread.sleep(10);
 		} catch(Exception e) {
 			log.error(String.format("!!!! query error !!!! - %s", e.getMessage()));
-			rollback();
+//			rollback();
 			e.printStackTrace();
 		} finally {
 			close();
@@ -186,7 +185,7 @@ public class Connector {
 												rs.getString("product_discount_price"),
 												rs.getString("product_image"),
 												rs.getString("product_url"),
-												rs.getInt("option_type"),
+												rs.getString("option_type"),
 												rs.getString("option_selector_1"),
 												rs.getString("option_selector_2"),
 												rs.getString("option_selector_3"),
@@ -199,12 +198,11 @@ public class Connector {
 												rs.getInt("scroll_type")
 											);
 				targetList.add(target);
-				log.debug(target.toString());
 			}
 			Thread.sleep(10);
 		} catch(Exception e) {
 			log.error(String.format("!!!! query error !!!! - %s", e.getMessage()));
-			rollback();
+//			rollback();
 			e.printStackTrace();
 		} finally {
 			close();
@@ -271,7 +269,7 @@ public class Connector {
 			pstmt.setString(i++, ct.getProduct_discount_price());
 			pstmt.setString(i++, ct.getProduct_image());
 			pstmt.setString(i++, ct.getProduct_url());
-			pstmt.setInt(i++, ct.getOption_type());
+			pstmt.setString(i++, ct.getOption_type());
 			pstmt.setString(i++, ct.getOption_selector_1());
 			pstmt.setString(i++, ct.getOption_selector_2());
 			pstmt.setString(i++, ct.getOption_selector_3());
@@ -284,7 +282,7 @@ public class Connector {
 			
 			conn.commit();
 		}catch(Exception e) {
-			rollback();
+//			rollback();
 			e.printStackTrace();
 		}finally {
 			close();
@@ -308,7 +306,7 @@ public class Connector {
 										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 										"  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," + 
 										"  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
-										"  `create_date` datetime NOT NULL," + 
+										"  `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP," + 
 										"  PRIMARY KEY (`num`)" + 
 										") ENGINE=InnoDB DEFAULT CHARSET=utf8 ";
 		try {
@@ -320,10 +318,10 @@ public class Connector {
 			
 			Date date = new Date();
 			
-			System.out.println(String.format("cteate table now : %s",date));
+			log.info(String.format("cteate table now : %s",date));
 			
 		}catch(Exception e) {
-			rollback();
+//			rollback();
 			throw new Exception("Temp table Already exists");
 		}finally {
 			close();
@@ -360,7 +358,7 @@ public class Connector {
 			
 		}catch(Exception e) {
 			log.error(String.format("delete temp table fail"));
-			rollback();
+//			rollback();
 			e.printStackTrace();
 			System.exit(0);
 		}finally {
@@ -371,10 +369,16 @@ public class Connector {
 	public int cleanUp() {
 		int result = 0;
 		
+		//중복 상품 제거
+//		String sql0 = "DELETE FROM tmp_" + Config.SERVICETABLE + " WHERE num IN (SELECT num FROM (SELECT *, COUNT(detail_url) AS cnt FROM tmp_" + Config.SERVICETABLE + " GROUP BY detail_url) a WHERE a.cnt>1)";
+//		String sql0 = "DELETE FROM tmp_" + Config.SERVICETABLE + " WHERE num IN (SELECT num FROM (SELECT num,item_name,shop_name,detail_url,COUNT(*) AS cnt FROM tmp_" + Config.SERVICETABLE + " GROUP BY shop_name,item_name ORDER BY shop_name,item_name) AS a WHERE a.cnt>1)";
+		String sql0 = "DELETE FROM tmp_" + Config.SERVICETABLE + " WHERE num IN (SELECT * FROM (SELECT a.num from tmp_" + Config.SERVICETABLE + " AS a ,(SELECT num,shop_name,item_name,cnt FROM (SELECT num,item_name,shop_name,detail_url,COUNT(*) AS cnt FROM tmp_" + Config.SERVICETABLE + " GROUP BY shop_name,item_name ORDER BY shop_name,item_name) AS b WHERE b.cnt>1) AS c WHERE a.num!=c.num AND a.shop_name=c.shop_name AND a.item_name=c.item_name) AS d)";
+		
+		
 		//item_sales_original존재여부 확인
 		String sql1 = "SELECT EXISTS (" + 
 					  "  SELECT 1 FROM Information_schema.tables" + 
-					  "  WHERE table_schema = '" + Config.SERVICEDB+ 
+					  "  WHERE table_schema = '" + Config.SERVICEDB + 
 					  "' AND table_name = '" + Config.SERVICETABLE + "_original'"+
 					  ") AS flag";
 		
@@ -410,22 +414,40 @@ public class Connector {
 					  "			b.sales_target," + 
 					  "			b.item_name," + 
 					  "			b.thumbnail_img," + 
-					  "			a.detail_url," +
+					  "			b.detail_url," +
 					  "			b.options," + 
 					  "			b.item_state," + 
 					  "			a.create_date" + 
 					  "		FROM " + Config.SERVICETABLE + " a , tmp_" + Config.SERVICETABLE + " b " + 
-					  "		WHERE a.detail_url = b.detail_url " + 
+					  "		WHERE a.shop_name = b.shop_name AND a.item_name = b.item_name" + 
 					  ")";
 		
 		//삭제상품 상태 변경
-		String sql5 = "UPDATE " + Config.SERVICETABLE + "_newborn " + 
-					  "		SET item_state = 1	" + 
-					  "		WHERE num IN(		" + 
-					  " 		SELECT num FROM tmp_" + Config.SERVICETABLE +
-					  "				WHERE NOT detail_url IN (" + 
-					  "					SELECT detail_url FROM " + Config.SERVICETABLE + " )" + 
-					  "			)";
+		String sql5 = "INSERT INTO " + Config.SERVICETABLE + "_newborn (" +
+					  "	 SELECT	num, " + 
+					  "			category1," +
+					  "			category2," + 
+					  "			item_price," + 
+					  "			discount_price," + 
+					  "			shop_name," + 
+					  "			sales_target," + 
+					  "			item_name," + 
+					  "			thumbnail_img," + 
+					  "			detail_url," +
+					  "			options," + 
+					  "			1," + 
+					  "			create_date" + 
+					  "		FROM " + Config.SERVICETABLE + " WHERE CONCAT(shop_name,item_name) NOT IN (" + 
+					  "			SELECT CONCAT(shop_name,item_name) FROM tmp_" + Config.SERVICETABLE + ")" + 
+					  ")";
+		
+//		String sql5 = "UPDATE " + Config.SERVICETABLE + "_newborn " + 
+//					  "		SET item_state = 1	" + 
+//					  "		WHERE detail_url IN(		" + 
+//					  " 		SELECT detail_url FROM tmp_" + Config.SERVICETABLE +
+//					  "				WHERE detail_url NOT IN (" + 
+//					  "					SELECT detail_url FROM " + Config.SERVICETABLE + " )" + 
+//					  "			)";
 		
 		//추가상품 업데이트
 		String sql6 = "INSERT INTO " + Config.SERVICETABLE +"_newborn (	" + 
@@ -440,21 +462,27 @@ public class Connector {
 						"				item_name, thumbnail_img,	" + 
 						"				detail_url, options, item_state, create_date	" + 
 						"			 FROM tmp_" + Config.SERVICETABLE +
-						"			 WHERE NOT detail_url " +
-						"		IN(SELECT detail_url FROM " + Config.SERVICETABLE + ")";
+						"			 WHERE CONCAT(shop_name,item_name) " +
+						"		NOT IN(SELECT CONCAT(shop_name,item_name) FROM " + Config.SERVICETABLE + ")";
 
 		String sql7 = "ALTER TABLE " + Config.SERVICETABLE +
 						"	RENAME TO " + Config.SERVICETABLE + "_original";
 		
-		String sql8 = "UPDATE item_sales_newborn SET detail_url=REPLACE(detail_url,'http:','https:') WHERE shop_name!='헤네스'";
+//		String sql8 = "UPDATE item_sales_newborn SET detail_url=REPLACE(detail_url,'http:','https:') WHERE shop_name NOT IN('헤네스','나투라비타')";
 		
 		String sql9 = "ALTER TABLE " + Config.SERVICETABLE + "_newborn" +
 						"	RENAME TO " + Config.SERVICETABLE;
 		
 		String sql10 = "DROP TABLE tmp_"	+ Config.SERVICETABLE;
 		
-		
 		try {
+			
+			//0. 중복상품제거
+			pstmt = conn.prepareStatement(sql0);
+			pstmt.executeUpdate();
+			conn.commit();
+			log.info(String.format("중복상품 제거 - 완료"));
+			
 			//1. original 테이블 존재여부 확인
 			pstmt = conn.prepareStatement(sql1);
 			rs = pstmt.executeQuery();
@@ -498,14 +526,15 @@ public class Connector {
 			conn.commit();
 			log.info(String.format("기존테이블 백업 - 완료"));
 			
-			pstmt = conn.prepareStatement(sql8);
-			pstmt.executeUpdate();
-			conn.commit();
-			log.info(String.format("http > https"));
+//			pstmt = conn.prepareStatement(sql8);
+//			pstmt.executeUpdate();
+//			conn.commit();
+//			log.info(String.format("http > https"));
 			
 			pstmt = conn.prepareStatement(sql9);
 			pstmt.executeUpdate();
 			conn.commit();
+			
 			log.info(String.format("%s_newborn -> %s - 완료(테이블명 변경)",Config.SERVICETABLE,Config.SERVICETABLE));
 			
 			pstmt = conn.prepareStatement(sql10);
@@ -519,12 +548,14 @@ public class Connector {
 			
 		}catch(Exception e) {
 			log.info(String.format("System shutdown!! error catch : %s", e.getMessage()));
-			log.error(e.getMessage());
 			e.printStackTrace();
-			rollback();
+//			rollback();
 			close();
 			connClose();
 			System.exit(0);
+		}finally {
+			close();
+			connClose();
 		}
 		
 		return result;
@@ -548,13 +579,13 @@ public class Connector {
 		return result;
 	}
 	
-	private void rollback() {
-		try {
-			conn.rollback();
-		}catch(Exception e) {
-			log.error(e.getMessage());
-		}
-	}
+//	private void rollback() {
+//		try {
+//			conn.rollback();
+//		}catch(Exception e) {
+//			log.error(e.getMessage());
+//		}
+//	}
 	
 	private void close() {
 		try {
@@ -606,21 +637,36 @@ public class Connector {
 			try {
 				for(Product pro:list) {
 					int i = 1;
-					pstmt=conn.prepareStatement("INSERT INTO tmp_"+Config.SERVICETABLE + 
-															" (	" + 
-																"	category1,		" + 
-																"	category2,		" + 
-																"	item_price,		" +
-																"	discount_price,	" +
-																"	shop_name,		" +
-																"	sales_target,	" + 
-																"	item_name,		" +
-																"	thumbnail_img,	" + 
-																"	detail_url,		" +
-																"	options,		" + 
-																"	item_state,		" +	
-																"	create_date )	" +
-														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+//					pstmt=conn.prepareStatement("INSERT INTO tmp_"+Config.SERVICETABLE + 
+//															" (	" + 
+//																"	category1,		" + 
+//																"	category2,		" + 
+//																"	item_price,		" +
+//																"	discount_price,	" +
+//																"	shop_name,		" +
+//																"	sales_target,	" + 
+//																"	item_name,		" +
+//																"	thumbnail_img,	" + 
+//																"	detail_url,		" +
+//																"	options,		" + 
+//																"	item_state )	" +
+//														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					
+					String sql = "INSERT INTO tmp_"+Config.SERVICETABLE + 
+													" (	category1,		" + 
+													"	category2,		" + 
+													"	item_price,		" +
+													"	discount_price,	" +
+													"	shop_name,		" +
+													"	sales_target,	" + 
+													"	item_name,		" +
+													"	thumbnail_img,	" + 
+													"	detail_url,		" +
+													"	options,		" + 
+													"	item_state		)" +
+												"SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS("+
+													"SELECT 'A' FROM tmp_" + Config.SERVICETABLE + " WHERE detail_url = ? )";
+					pstmt=conn.prepareStatement(sql);
 					pstmt.setInt(i++,pro.getCategory1());
 					pstmt.setInt(i++,pro.getCategory2());
 					pstmt.setInt(i++,pro.getProduct_price()==0?pro.getProduct_discount_price():pro.getProduct_price());
@@ -632,8 +678,8 @@ public class Connector {
 					pstmt.setString(i++,pro.getProduct_url());
 					pstmt.setString(i++,pro.getOptions());
 					pstmt.setInt(i++, pro.getItem_state());
+					pstmt.setString(i++,pro.getProduct_url());
 					pstmt.executeUpdate();
-					
 				}
 				log.info(String.format("insert company : %s / cnt : %d", list.get(0).getCompany(),list.size()));
 				conn.commit();
@@ -646,12 +692,67 @@ public class Connector {
 				
 			}catch(Exception e) {
 				log.error(String.format("error MSG : %s - %s",Thread.currentThread().getName(), e.getMessage()));
-				rollback();
+//				rollback();
 				e.printStackTrace();
 			}finally{
 				close();
 			}
 		}
+	}
+
+
+	public CrawllingTarget getTestList(String product_list_url) {
+		// TODO Auto-generated method stub
+		if(conn==null) {
+			log.info(String.format("not create connector. create connector first"));
+			return null;
+		}
+		CrawllingTarget target=null;
+		String sql = "SELECT * FROM target_info WHERE shop_url='"+product_list_url+"'";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			log.debug(String.format("query = %s",sql));
+			
+			if(rs.next()) {
+				target = new CrawllingTarget(
+											rs.getInt("seq"),
+											rs.getString("shop_url"),
+											rs.getString("shop_name"),
+											rs.getString("shop_description"),
+											rs.getString("target"),
+											rs.getInt("category1"),
+											rs.getInt("category2"),
+											rs.getString("product"),
+											rs.getString("product_name"),
+											rs.getString("product_price"),
+											rs.getString("product_discount_price"),
+											rs.getString("product_image"),
+											rs.getString("product_url"),
+											rs.getString("option_type"),
+											rs.getString("option_selector_1"),
+											rs.getString("option_selector_2"),
+											rs.getString("option_selector_3"),
+											rs.getInt("select_type"),
+											rs.getString("price_selector"),
+											rs.getString("soldout_checker"),
+											rs.getString("page_selector"),
+											rs.getString("page_size_selector"),
+											rs.getInt("page_size"),
+											rs.getInt("scroll_type")
+										);
+				log.debug(target.toString());
+			}
+		} catch(Exception e) {
+			log.error(String.format("!!!! query error !!!! - %s", e.getMessage()));
+//			rollback();
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		return target;
 	}
 }
 

@@ -18,7 +18,7 @@ public class CrawllingTarget {
 	private String product_discount_price;
 	private String product_image;
 	private String product_url;
-	private int option_type;
+	private String option_type;
 	private String option_selector_1;
 	private String option_selector_2;
 	private String option_selector_3;
@@ -88,7 +88,7 @@ public class CrawllingTarget {
 		return product_url;
 	}
 	
-	public int getOption_type() {
+	public String getOption_type() {
 		return option_type;
 	}
 
@@ -141,7 +141,7 @@ public class CrawllingTarget {
 							int category1, int category2, 
 							String product, String product_name, 
 							String product_price, String product_discount_price,
-							String product_image, String product_url, int option_type,
+							String product_image, String product_url, String option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
 							int select_type, String price_selector, String soldout_checker, 
 							String page_selector, String page_size_selector, 
@@ -176,7 +176,7 @@ public class CrawllingTarget {
 							int category1, int category2,
 							String product, String product_name,
 							String product_price, String product_discount_price,
-							String product_image, String product_url, int option_type,
+							String product_image, String product_url, String option_type,
 							String option_selector_1, String option_selector_2, String option_selector_3,
 							int select_type, String price_selector, String soldout_checker,
 							String page_selector,String page_size_selector, 

@@ -15,6 +15,7 @@ public class ApiTest {
 		Crawler c = new Crawler(0);
 		Crawler.round=0;
 		c.start();
+		System.out.println("Interval : " + (System.currentTimeMillis()-start));
 	}
 	public static void main2(String[] args) {
 		// api 객체 생성
@@ -48,7 +49,7 @@ public class ApiTest {
 				"div > div > div > ul > li.product_price",
 				"div > div > a > img",
 				"div > div > a.link",
-				0,
+				"0",
 				"#product_option_id1 > option",
 				"#product_option_id2 > option",
 				null,
