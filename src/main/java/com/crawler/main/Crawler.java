@@ -17,8 +17,9 @@ import com.crawler.config.Config;
 import com.crawler.db.Connector;
 import com.crawler.model.CrawllingTarget;
 import com.crawler.model.Product;
+import com.crawler.util.ImageDownloader;
 
-public class Crawler extends Thread{
+public class Crawler extends Thread {
 	private static final Logger log = LogManager.getLogger(Crawler.class);
 	
 	@SuppressWarnings("unused")
@@ -146,6 +147,7 @@ public class Crawler extends Thread{
 					   product_name = product_name.replaceAll(",", "，");
 					   product_name = product_name.replaceAll("\n", " ");
 					   product_name = product_name.replaceAll("★사은품증정★ ", "");
+					   product_name = product_name.replaceAll("'", "＇"); 
      			String price = "";
      			int parsePrice = 0;
      			String dis_price = "";
@@ -202,10 +204,19 @@ public class Crawler extends Thread{
 	     				price = dis_price;
 	     			}
      			}
-	     		
 				
 				String detailLink = elem.findElement(By.cssSelector(ct.getProduct_url())).getAttribute("href");
 				String img = elem.findElement(By.cssSelector(ct.getProduct_image())).getAttribute("src");
+				
+				//TODO 여기 이미지 다운로드
+				if(ct.getShop_name().equals("나투라비타") 
+						|| ct.getShop_name().equals("네러메몰(네이쳐러브메레)")) {
+					ImageDownloader downloader = new ImageDownloader(ct.getShop_name(),product_name,img);
+					downloader.start();
+					String type = img.substring(img.lastIndexOf("."),img.lastIndexOf(".")+4);
+					img = "http://babybaily.cdn3.cafe24.com/"+downloader.getFileName()+type;
+					log.debug("file_name = "+img);
+				}
 				String soldoutChecker = ct.getSoldout_checker();
 				int item_state = 0;
 				

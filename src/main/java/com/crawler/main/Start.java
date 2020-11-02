@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.crawler.config.Config;
 import com.crawler.exception.CrawlerException;
+import com.crawler.util.FTPUploader;
 
 public class Start {
 	public static final Logger log = LogManager.getLogger(Start.class);
@@ -98,6 +99,12 @@ public class Start {
 		try {
 			//테이블 정리! Clean up!
 			Crawler.cleanup();
+			
+			//이미지 FTP전송
+			FTPUploader ftpUploader = new FTPUploader();
+	        ftpUploader.uploadFile();
+	        ftpUploader.disconnect();
+			
 		}catch(Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
