@@ -306,6 +306,7 @@ public class Connector {
 										"  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 										"  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," + 
 										"  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
+										"  `option_state` int not null default 0 comment '옵션상태 : 0: 정상 / 1: 판매중단'," +
 										"  `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP," + 
 										"  PRIMARY KEY (`num`)" + 
 										") ENGINE=InnoDB DEFAULT CHARSET=utf8 ";
@@ -322,6 +323,7 @@ public class Connector {
 			
 		}catch(Exception e) {
 //			rollback();
+			log.debug(e.getMessage());
 			throw new Exception("Temp table Already exists");
 		}finally {
 			close();
@@ -399,9 +401,10 @@ public class Connector {
 					  "  `detail_url` mediumtext NOT NULL COMMENT '상세화면 URL'," +
 					  "  `options` mediumtext DEFAULT NULL COMMENT '옵션 - json타입으로 저장(target_info.option_selector_1~3)'," +
 					  "  `item_state` int NOT NULL DEFAULT 0 COMMENT '0: 정상 / 1: 판매중단'," +
+					  "  `option_state` int not null default 0 comment '옵션상태 : 0: 정상 / 1: 판매중단'," +
 					  "  `create_date` datetime NOT NULL," + 
 					  "  PRIMARY KEY (`num`)" + 
-					  ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci COMMENT='상품 테이블'";
+					  ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='상품 테이블'";
 		
 		//기존 상품 num 값 유지 및 정보 업데이트
 		String sql4 = "INSERT INTO " + Config.SERVICETABLE + "_newborn (" +
@@ -416,7 +419,8 @@ public class Connector {
 					  "			b.thumbnail_img," + 
 					  "			b.detail_url," +
 					  "			b.options," + 
-					  "			b.item_state," + 
+					  "			b.item_state," +
+					  "			a.option_state," + 
 					  "			a.create_date" + 
 					  "		FROM " + Config.SERVICETABLE + " a , tmp_" + Config.SERVICETABLE + " b " + 
 					  "		WHERE a.shop_name = b.shop_name AND a.item_name = b.item_name" + 
@@ -436,6 +440,7 @@ public class Connector {
 					  "			detail_url," +
 					  "			options," + 
 					  "			1," + 
+					  "			1," +
 					  "			create_date" + 
 					  "		FROM " + Config.SERVICETABLE + " WHERE CONCAT(shop_name,item_name) NOT IN (" + 
 					  "			SELECT CONCAT(shop_name,item_name) FROM tmp_" + Config.SERVICETABLE + ")" + 
@@ -455,12 +460,16 @@ public class Connector {
 						"		item_price, discount_price,	" + 
 						"		shop_name, sales_target,	" + 
 						"		item_name, thumbnail_img,	" + 
-						"		detail_url, options, item_state, create_date	" + 
+						"		detail_url, options, item_state, " + 
+						"		option_state, " + 
+						"		create_date	" + 
 						"	) SELECT 	category1, category2,		" + 
 						"				item_price, discount_price,	" + 
 						"				shop_name, sales_target,	" + 
 						"				item_name, thumbnail_img,	" + 
-						"				detail_url, options, item_state, create_date	" + 
+						"				detail_url, options, item_state, " + 
+						"				option_state, " + 
+						"				create_date	" + 
 						"			 FROM tmp_" + Config.SERVICETABLE +
 						"			 WHERE CONCAT(shop_name,item_name) " +
 						"		NOT IN(SELECT CONCAT(shop_name,item_name) FROM " + Config.SERVICETABLE + ")";
@@ -637,21 +646,6 @@ public class Connector {
 			try {
 				for(Product pro:list) {
 					int i = 1;
-//					pstmt=conn.prepareStatement("INSERT INTO tmp_"+Config.SERVICETABLE + 
-//															" (	" + 
-//																"	category1,		" + 
-//																"	category2,		" + 
-//																"	item_price,		" +
-//																"	discount_price,	" +
-//																"	shop_name,		" +
-//																"	sales_target,	" + 
-//																"	item_name,		" +
-//																"	thumbnail_img,	" + 
-//																"	detail_url,		" +
-//																"	options,		" + 
-//																"	item_state )	" +
-//														"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-					
 					String sql = "INSERT INTO tmp_"+Config.SERVICETABLE + 
 													" (	category1,		" + 
 													"	category2,		" + 
@@ -662,9 +656,11 @@ public class Connector {
 													"	item_name,		" +
 													"	thumbnail_img,	" + 
 													"	detail_url,		" +
-													"	options,		" + 
-													"	item_state		)" +
-												"SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS("+
+													"	options,		" +
+													"	item_state,		" +
+													"	option_state	" +  
+													" 	)" +
+												"SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS("+
 													"SELECT 'A' FROM tmp_" + Config.SERVICETABLE + " WHERE detail_url = ? )";
 					pstmt=conn.prepareStatement(sql);
 					pstmt.setInt(i++,pro.getCategory1());
@@ -678,6 +674,7 @@ public class Connector {
 					pstmt.setString(i++,pro.getProduct_url());
 					pstmt.setString(i++,pro.getOptions());
 					pstmt.setInt(i++, pro.getItem_state());
+					pstmt.setInt(i++, pro.getOption_state());
 					pstmt.setString(i++,pro.getProduct_url());
 					pstmt.executeUpdate();
 				}

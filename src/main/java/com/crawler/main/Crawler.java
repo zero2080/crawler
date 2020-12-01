@@ -143,11 +143,9 @@ public class Crawler extends Thread {
 // 			
      		for(int j =0;j<list.size();j++) {
      			WebElement elem = list.get(j);
-     			String product_name = elem.findElement(By.cssSelector(ct.getProduct_name())).getText().trim();
-					   product_name = product_name.replaceAll(",", "，");
-					   product_name = product_name.replaceAll("\n", " ");
-					   product_name = product_name.replaceAll("★사은품증정★ ", "");
-					   product_name = product_name.replaceAll("'", "＇"); 
+     			String product_name = null;
+     			try {
+     				   product_name = this.getProductName(elem,ct,j);
      			String price = "";
      			int parsePrice = 0;
      			String dis_price = "";
@@ -256,9 +254,16 @@ public class Crawler extends Thread {
 										detailLink,
 										img,
 										resultPrice.equals("")?1:item_state,
+										0,
 										"{\"option1\":\"" + ct.getOption_selector_1() + "\", \"option2\": \""+(ct.getOption_selector_2()==null?"null":ct.getOption_selector_2().equals("")?"null":ct.getOption_selector_2())+"\", \"option3\":\""+(ct.getOption_selector_3()==null?"null":ct.getOption_selector_3().equals("")?"null":ct.getOption_selector_3())+"\"}"
 										);
      			tmp_page.add(p);
+     			}catch(NoSuchElementException e) {
+     				log.error("");
+     				log.error(String.format("CSS error : %s",e.getMessage()));
+     				log.error("");
+     				continue;
+     			}
      		}
      		
      		if(i>0) {
@@ -294,6 +299,22 @@ public class Crawler extends Thread {
 //		return total;
 //	}
 //	
+	
+	private String getProductName(WebElement elem, CrawllingTarget ct, int idx) throws NoSuchElementException {
+		String result = null;
+		try {
+			result = elem.findElement(By.cssSelector(ct.getProduct_name())).getText().trim();
+		}catch(NoSuchElementException e) {
+			String test = (String)this.webDriver.executeScript("return document.querySelectorAll('"+ct.getProduct()+"')["+idx+"].innerText.replaceAll('\\n',' ');");
+			test = test.substring(test.indexOf("]")==-1?test.indexOf(" ")==-1?0:test.indexOf(" "):(test.indexOf("]")+1),test.lastIndexOf(" ")).trim();
+			result = test;
+		}
+			result = result.replaceAll(",", "，");
+			result = result.replaceAll("\n", " ");
+			result = result.replaceAll("★사은품증정★ ", "");
+			result = result.replaceAll("'", "＇"); 
+		return result;
+	}
 	
 	public static int round = 0;
 	

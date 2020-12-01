@@ -12,6 +12,7 @@ public class Product {
 	private String product_img_url;
 	private String product_url;
 	private int item_state;
+	private int option_state;
 	private String options;
 	
 	public Product( int category1,
@@ -25,6 +26,7 @@ public class Product {
 					String product_url,
 					String product_img_url,
 					int item_state,
+					int option_state,
 					String options) {
 		this.category1=category1;
 		this.category2=category2;
@@ -37,6 +39,7 @@ public class Product {
 		this.product_url = product_url;
 		this.product_img_url=product_img_url;
 		this.item_state=item_state;
+		this.option_state=option_state;
 		this.options=options;
 	}
 	
@@ -105,6 +108,12 @@ public class Product {
 	public void setItem_state(int item_state) {
 		this.item_state=item_state;
 	}
+	public int getOption_state() {
+		return option_state;
+	}
+	public void setItem_state_2(int option_state) {
+		this.option_state=option_state;
+	}
 	public String getOptions() {
 		return options;
 	}
@@ -118,7 +127,8 @@ public class Product {
 					  ", product_name=" + product_name + ", description=" + description + 
 					  ", product_price=" + product_price + ", product_discount_price=" + product_discount_price + 
 					  ", target=" + target + ", product_img_url=" + product_img_url + 
-					  ", product_url=" + product_url + ", item_state=" + item_state + ", options=" + options + "]";
+					  ", product_url=" + product_url + ", item_state=" + item_state + 
+					  ", option_state=" + option_state + ", options=" + options + "]";
 	}
 
 	@Override
@@ -135,6 +145,7 @@ public class Product {
 			&& this.product_img_url.equals(temp.product_img_url)
 			&& this.product_url.equals(temp.product_url)
 			&& this.item_state==temp.item_state
+			&& this.option_state==temp.option_state
 			&& this.options.equals(temp.options)) {
 			result = true;
 		}

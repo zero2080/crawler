@@ -15,7 +15,7 @@ plugins {
 
 compileJava.options.encoding='UTF-8'
 group 'Crawler'
-version '1.3.0'
+version '2.0.0'
 
 mainClassName = 'com.crawler.main.Start'
 
